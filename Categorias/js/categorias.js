@@ -1,0 +1,132 @@
+document.addEventListener('DOMContentLoaded', function() {
+    // Obtener la categoría de la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoria = urlParams.get('categoria');
+    
+    if (!categoria) {
+        mostrarError('No se especificó ninguna categoría');
+        return;
+    }
+    
+    // Cargar los datos de productos desde el JSON
+    fetch('./data/productos.json')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('No se pudo cargar el archivo JSON');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Verificar si existe la categoría
+            if (!data[categoria]) {
+                mostrarError('La categoría solicitada no existe');
+                return;
+            }
+            
+            // Actualizar el título de la página
+            document.title = `${data[categoria].nombre} | FoodDelivery`;
+            
+            // Actualizar el título de la sección
+            const tituloCategoria = document.getElementById('categoria-titulo');
+            tituloCategoria.textContent = data[categoria].nombre;
+            
+            // Cargar los productos
+            cargarProductos(data[categoria].productos);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarError('Error al cargar los productos');
+        });
+    
+    // Resto del código dentro de DOMContentLoaded...
+});
+
+// Función para cargar los productos en la página
+function cargarProductos(productos) {
+    const contenedor = document.getElementById('productos-container');
+    
+    // Limpiar el contenedor
+    contenedor.innerHTML = '';
+    
+    if (productos.length === 0) {
+        contenedor.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <p>No hay productos disponibles en esta categoría.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Agregar cada producto al contenedor (versión simplificada)
+    productos.forEach(producto => {
+        const productoHTML = `
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm product-card">
+                    <img src="${producto.imagen}" class="card-img-top" alt="${producto.nombre}" 
+                         style="height: 200px; object-fit: cover; cursor: pointer;"
+                         data-bs-toggle="modal" data-bs-target="#productoDetailModal" 
+                         onclick="cargarDetalleProducto('${producto.id}', '${producto.nombre}', 
+                         '${producto.descripcion}', '${producto.imagen}', '${producto.precio}', 
+                         '${producto.rating}', '${producto.ruta || ''}')">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">${producto.nombre}</h5>
+                        <p class="fw-bold">${producto.precio}</p>
+                        <small class="text-muted">Click para ver detalles</small>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        contenedor.innerHTML += productoHTML;
+    });
+}
+
+// Simplifica la función ejecutarModelo para que solo envíe la solicitud sin mostrar resultados
+async function ejecutarModelo(modelo) {
+    try {
+        console.log('Enviando solicitud para cargar modelo:', modelo);
+        
+        // Solo envía la solicitud al servidor con la ruta del modelo
+        await fetch('http://127.0.0.1:5000/run-script', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ modelo }) // Enviar el modelo al servidor
+        });
+        
+        // No mostramos ningún resultado en la interfaz
+    } catch (error) {
+        // Solo registramos el error en la consola para depuración
+        console.error('Error en la solicitud:', error);
+    }
+}
+
+// Función para cargar los detalles de un producto en el modal
+function cargarDetalleProducto(id, nombre, descripcion, imagen, precio, rating, ruta) {
+    document.getElementById('producto-name').textContent = nombre;
+    document.getElementById('producto-description').textContent = descripcion;
+    document.getElementById('producto-img').src = imagen;
+    document.getElementById('producto-price').textContent = precio;
+    document.getElementById('producto-rating').textContent = rating;
+    
+    // Gestionar el botón de modelo 3D
+    const btnModelo3D = document.getElementById('btn-modelo-3d');
+    if (ruta && ruta !== 'undefined' && ruta !== '') {
+        btnModelo3D.style.display = 'block';
+        btnModelo3D.onclick = function() { ejecutarModelo(ruta); };
+    } else {
+        btnModelo3D.style.display = 'none';
+    }
+}
+
+// Función para mostrar mensajes de error
+function mostrarError(mensaje) {
+    const contenedor = document.getElementById('productos-container');
+    contenedor.innerHTML = `
+        <div class="col-12">
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i> ${mensaje}
+            </div>
+        </div>
+    `;
+    console.error(mensaje);
+}
