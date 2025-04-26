@@ -1,0 +1,129 @@
+:root {
+    --primary-color: #06C167;
+    --secondary-color: #000000;
+    --background-light: #f8f9fa;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.location-dropdown {
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.search-container {
+    position: relative;
+    flex-grow: 1;
+}
+
+.search-container i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+}
+
+.search-container input {
+    padding-left: 35px;
+    border-radius: 30px;
+    border: 1px solid #ddd;
+}
+
+.cart-btn {
+    position: relative;
+}
+
+.cart-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    padding: 0.25em 0.5em;
+    font-size: 0.75rem;
+}
+
+.category-card {
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s;
+    cursor: pointer;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+}
+
+.restaurant-card {
+    border: none;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: box-shadow 0.3s;
+}
+
+.restaurant-card:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.restaurant-img {
+    height: 180px;
+    object-fit: cover;
+}
+
+.delivery-info {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.rating {
+    background-color: #eee;
+    padding: 2px 8px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.sticky-top {
+    background-color: white;
+}
+
+.voice-assistant-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.voice-assistant-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 20px rgba(6, 193, 103, 0.4);
+}
+
+.voice-assistant-btn.active {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(6, 193, 103, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(6, 193, 103, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(6, 193, 103, 0); }
+}
+

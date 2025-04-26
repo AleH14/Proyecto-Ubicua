@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodDelivery | Comida a domicilio</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome para íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="Css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="sticky-top shadow-sm">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white py-3">
+            <div class="container">
+                <!-- Logo -->
+                <a class="navbar-brand text-success" href="#">
+                    <i class="fas fa-utensils me-2"></i>FoodDelivery
+                </a>
+                
+                <!-- Botón hamburguesa para móviles -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" >
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="navbarContent">
+                    <!-- Dirección de entrega -->
+                    <div class="dropdown me-3 d-none d-lg-block">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle location-dropdown" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-map-marker-alt me-1"></i> Entregar ahora
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><h6 class="dropdown-header">Dirección de entrega</h6></li>
+                            <li><a class="dropdown-item" href="#">Ingresar dirección</a></li>
+                            <li><a class="dropdown-item" href="#">Usar ubicación actual</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-plus-circle me-2"></i>Agregar dirección</a></li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Buscador -->
+                    <div class="search-container mx-lg-3 my-2 my-lg-0">
+                        <i class="fas fa-search"></i>
+                        <input class="form-control" type="search" placeholder="Restaurantes, comida, bebidas...">
+                    </div>
+                    
+                    <!-- Botones de navegación -->
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#"><i class="fas fa-store me-1"></i> Restaurantes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#"><i class="fas fa-th-large me-1"></i> Categorías</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#"><i class="fas fa-star me-1"></i> Favoritos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link cart-btn" href="#">
+                                <i class="fas fa-shopping-cart me-1"></i> Carrito
+                                <span class="cart-badge">2</span>
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle me-1"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#">Iniciar sesión</a></li>
+                                <li><a class="dropdown-item" href="#">Registrarse</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+<!-- Banner principal -->
+<section class="hero-banner mb-5">
+    <div class="container">
+        <div class="row align-items-center bg-light rounded-4 overflow-hidden">
+            <div class="col-lg-6 py-5 px-4 px-lg-5">
+                <h1 class="display-5 fw-bold mb-3">Comida a domicilio en minutos</h1>
+                <p class="lead mb-4">Los mejores restaurantes de tu ciudad a un clic de distancia. ¡Pide ahora y recibe sin moverte de casa!</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="#restaurantes" class="btn btn-success btn-lg px-4">Ver restaurantes</a>
+                    <a href="#" class="btn btn-outline-dark btn-lg px-4">Ofertas del día</a>
+                </div>
+            </div>
+            <div class="col-lg-6 p-0">
+                <img src="https://images.unsplash.com/photo-1565299585323-38d6b0865b47?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1080&q=80" 
+                     class="img-fluid h-100 object-fit-cover" alt="Comida deliciosa">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categorías -->
+<section class="mb-5">
+    <div class="container">
+        <h2 class="fw-bold mb-4">Explora por categorías</h2>
+        <div class="row g-3">
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="category-card shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80" class="img-fluid w-100" alt="Pizza">
+                    <div class="p-2 text-center">
+                        <h6 class="m-0">Pizza</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="Categorias/hamburgesas.html" class="text-decoration-none">
+                    <div class="category-card shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80" class="img-fluid w-100" alt="Hamburguesas">
+                        <div class="p-2 text-center">
+                            <h6 class="m-0">Hamburguesas</h6>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="category-card shadow-sm"  >
+                    <img src="https://images.unsplash.com/photo-1563612116625-3012372fccce?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80" class="img-fluid w-100" alt="Asiática">
+                    <div class="p-2 text-center">
+                        <h6 class="m-0">Asiática</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="category-card shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1576506295286-5cda18df43e7?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80" class="img-fluid w-100" alt="Comida sana">
+                    <div class="p-2 text-center">
+                        <h6 class="m-0">Comida sana</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="category-card shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1593246049226-ded77bf90326?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80" class="img-fluid w-100" alt="Postres">
+                    <div class="p-2 text-center">
+                        <h6 class="m-0">Postres</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="category-card shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1527661591475-527312dd65f5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80" class="img-fluid w-100" alt="Bebidas">
+                    <div class="p-2 text-center">
+                        <h6 class="m-0">Bebidas</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Filtro de restaurantes -->
+<section class="mb-4">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="fw-bold mb-0" id="restaurantes">Restaurantes cerca de ti</h2>
+            <div class="d-flex align-items-center">
+                <div class="dropdown me-2">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-sort me-1"></i> Ordenar
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#">Más populares</a></li>
+                        <li><a class="dropdown-item" href="#">Mejor valorados</a></li>
+                        <li><a class="dropdown-item" href="#">Menor tiempo de entrega</a></li>
+                        <li><a class="dropdown-item" href="#">Menor costo de envío</a></li>
+                    </ul>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-filter me-1"></i> Filtros
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><h6 class="dropdown-header">Tiempo de entrega</h6></li>
+                        <li><a class="dropdown-item" href="#">Menos de 30 min</a></li>
+                        <li><a class="dropdown-item" href="#">30-45 min</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><h6 class="dropdown-header">Costo de envío</h6></li>
+                        <li><a class="dropdown-item" href="#">Envío gratis</a></li>
+                        <li><a class="dropdown-item" href="#">Hasta $2</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Restaurante 1 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="restaurant-card shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" class="card-img-top restaurant-img" alt="Restaurant">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="card-title mb-0">El Buen Sabor</h5>
+                            <span class="rating"><i class="fas fa-star text-warning me-1"></i>4.8</span>
+                        </div>
+                        <p class="card-text text-muted small mb-2">Mediterránea, Española, Tapas</p>
+                        <div class="d-flex justify-content-between delivery-info">
+                            <span><i class="fas fa-clock me-1"></i> 20-35 min</span>
+                            <span><i class="fas fa-truck me-1"></i> 2.50€</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Añade más restaurantes aquí -->
+            
+        </div>
+        
+        <!-- Paginación -->
+        <nav class="mt-5">
+            <ul class="pagination justify-content-center">
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a>
+                </li>
+                <li class="page-item active" aria-current="page">
+                    <a class="page-link" href="#">1</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="#">2</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="#">3</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="#">Siguiente</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</section>
+
+<!-- Botón de asistente de voz -->
+<div class="voice-assistant-btn shadow" id="voiceAssistantBtn">
+    <i class="fas fa-microphone"></i>
+</div>
+
+
+<script>
+
+</script>
+
+<!-- Footer -->
+    <footer class="bg-dark text-white pt-5 pb-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <!-- Columna 1: Logo e info -->
+                <div class="col-md-3 mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-utensils text-success me-2 fs-3"></i>
+                        <h5 class="m-0 text-success fw-bold">FoodDelivery</h5>
+                    </div>
+                    <p class="text-muted small">Lleva tu comida favorita hasta la puerta de tu casa con solo unos clics.</p>
+                    <div class="mt-3">
+                        <a href="#" class="text-decoration-none me-3"><i class="fab fa-facebook-f text-white"></i></a>
+                        <a href="#" class="text-decoration-none me-3"><i class="fab fa-twitter text-white"></i></a>
+                        <a href="#" class="text-decoration-none me-3"><i class="fab fa-instagram text-white"></i></a>
+                    </div>
+                </div>
+    
+                <!-- Columna 2: Enlaces útiles -->
+                <div class="col-md-3 mb-4">
+                    <h6 class="text-uppercase fw-bold mb-3">Enlaces útiles</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Sobre nosotros</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Cómo funciona</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Restaurantes populares</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Ofertas y promociones</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Blog</a></li>
+                    </ul>
+                </div>
+    
+                <!-- Columna 3: Soporte -->
+                <div class="col-md-3 mb-4">
+                    <h6 class="text-uppercase fw-bold mb-3">Soporte</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Centro de ayuda</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Preguntas frecuentes</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Contacto</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Términos y condiciones</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Política de privacidad</a></li>
+                    </ul>
+                </div>
+    
+                <!-- Columna 4: Descargar app -->
+                <div class="col-md-3 mb-4">
+                    <h6 class="text-uppercase fw-bold mb-3">Descarga nuestra app</h6>
+                    <p class="text-muted small">Descarga nuestra aplicación para una mejor experiencia</p>
+                    <div class="mb-3">
+                        <a href="#" class="btn btn-sm btn-outline-light d-inline-flex align-items-center mb-2 me-2">
+                            <i class="fab fa-apple fs-5 me-2"></i>
+                            <div>
+                                <small class="d-block" style="font-size: 0.7rem;">Disponible en</small>
+                                App Store
+                            </div>
+                        </a>
+                        <a href="#" class="btn btn-sm btn-outline-light d-inline-flex align-items-center">
+                            <i class="fab fa-google-play fs-5 me-2"></i>
+                            <div>
+                                <small class="d-block" style="font-size: 0.7rem;">Disponible en</small>
+                                Google Play
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+    
+            <hr class="my-4 bg-secondary">
+    
+            <!-- Línea de copyright y selección de país -->
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start small">
+                    <span class="text-uppercase fw-bold mb-3">&copy; 2025 Alejandro Hernandez. Todos los derechos reservados.</span>
+                </div>
+                <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-globe me-1"></i> España
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item small" href="#">España</a></li>
+                            <li><a class="dropdown-item small" href="#">México</a></li>
+                            <li><a class="dropdown-item small" href="#">Colombia</a></li>
+                            <li><a class="dropdown-item small" href="#">Argentina</a></li>
+                            <li><a class="dropdown-item small" href="#">Chile</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JavaScript Bundle con Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="Js/script.js"></script>
+
+</body>
+</html>

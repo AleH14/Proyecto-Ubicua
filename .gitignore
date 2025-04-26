@@ -1,0 +1,9 @@
+# Ignorar carpeta de modelos 3D y sus subcarpetas
+modelos3D/
+modelos3D/**/*
+
+# Archivos de caché de Python
+__pycache__/
+
+# Archivos de configuración de entorno
+.env

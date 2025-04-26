@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hamburguesas Disponibles | FoodDelivery</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../Css/styles.css">
+</head>
+<body>
+    <header class="sticky-top shadow-sm">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white py-3">
+            <div class="container">
+                <a class="navbar-brand text-success" href="../interfaz.html">
+                    <i class="fas fa-utensils me-2"></i>FoodDelivery
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarContent">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="../interfaz.html">Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Categorías</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Favoritos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link cart-btn" href="#">
+                                <i class="fas fa-shopping-cart me-1"></i> Carrito
+                                <span class="cart-badge">2</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <section class="mb-5">
+        <div class="container">
+            <h2 class="fw-bold mb-4">Hamburguesas Disponibles</h2>
+            <div class="row g-3"  >
+                <div class="col-md-4">
+                    <div class="category-card shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" class="img-fluid w-100" alt="Hamburguesa Clásica">
+                        <div class="p-2 text-center">
+                            <h6 class="m-0">Hamburguesa Clásica</h6>
+                            <p class="text-muted">Carne, lechuga, tomate y cebolla.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="category-card shadow-sm">
+                        <img src="https://lh5.googleusercontent.com/proxy/hW3yl7dUdfHzW6xO8lDrbpcDwT13HnuHajvNzq5MHREZo2HjavN_iocxd4-h2Hsq3e3nkozEZF_dNNHvZuXaPVQKAnwLKPGTJL3p_3ukKOIhU2p9tJofWdDmfmcrfF59" class="img-fluid w-100" alt="Hamburguesa BBQ">
+                        <div class="p-2 text-center">
+                            <h6 class="m-0">Hamburguesa BBQ</h6>
+                            <p class="text-muted">Carne, salsa BBQ, cebolla caramelizada.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="category-card shadow-sm">
+                        <img src="https://www.unileverfoodsolutions.es/dam/global-ufs/mcos/SPAIN/calcmenu/recipes/ES-recipes/general/hamburguesa-de-ternera-al-pesto/main-header.jpg" class="img-fluid w-100" alt="Hamburguesa Vegetariana">
+                        <div class="p-2 text-center">
+                            <h6 class="m-0">Hamburguesa Vegetariana</h6>
+                            <p class="text-muted">Garbanzos, espinacas y especias.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-dark text-white pt-5 pb-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <!-- Columna 1: Logo e info -->
+                <div class="col-md-3 mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-utensils text-success me-2 fs-3"></i>
+                        <h5 class="m-0 text-success fw-bold">FoodDelivery</h5>
+                    </div>
+                    <p class="text-muted small">Lleva tu comida favorita hasta la puerta de tu casa con solo unos clics.</p>
+                    <div class="mt-3">
+                        <a href="#" class="text-decoration-none me-3"><i class="fab fa-facebook-f text-white"></i></a>
+                        <a href="#" class="text-decoration-none me-3"><i class="fab fa-twitter text-white"></i></a>
+                        <a href="#" class="text-decoration-none me-3"><i class="fab fa-instagram text-white"></i></a>
+                    </div>
+                </div>
+    
+                <!-- Columna 2: Enlaces útiles -->
+                <div class="col-md-3 mb-4">
+                    <h6 class="text-uppercase fw-bold mb-3">Enlaces útiles</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Sobre nosotros</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Cómo funciona</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Restaurantes populares</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Ofertas y promociones</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Blog</a></li>
+                    </ul>
+                </div>
+    
+                <!-- Columna 3: Soporte -->
+                <div class="col-md-3 mb-4">
+                    <h6 class="text-uppercase fw-bold mb-3">Soporte</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Centro de ayuda</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Preguntas frecuentes</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Contacto</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Términos y condiciones</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Política de privacidad</a></li>
+                    </ul>
+                </div>
+    
+                <!-- Columna 4: Descargar app -->
+                <div class="col-md-3 mb-4">
+                    <h6 class="text-uppercase fw-bold mb-3">Descarga nuestra app</h6>
+                    <p class="text-muted small">Descarga nuestra aplicación para una mejor experiencia</p>
+                    <div class="mb-3">
+                        <a href="#" class="btn btn-sm btn-outline-light d-inline-flex align-items-center mb-2 me-2">
+                            <i class="fab fa-apple fs-5 me-2"></i>
+                            <div>
+                                <small class="d-block" style="font-size: 0.7rem;">Disponible en</small>
+                                App Store
+                            </div>
+                        </a>
+                        <a href="#" class="btn btn-sm btn-outline-light d-inline-flex align-items-center">
+                            <i class="fab fa-google-play fs-5 me-2"></i>
+                            <div>
+                                <small class="d-block" style="font-size: 0.7rem;">Disponible en</small>
+                                Google Play
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+    
+            <hr class="my-4 bg-secondary">
+    
+            <!-- Línea de copyright y selección de país -->
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start small">
+                    <span class="text-uppercase fw-bold mb-3">&copy; 2025 Alejandro Hernandez. Todos los derechos reservados.</span>
+                </div>
+                <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-globe me-1"></i> España
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item small" href="#">España</a></li>
+                            <li><a class="dropdown-item small" href="#">México</a></li>
+                            <li><a class="dropdown-item small" href="#">Colombia</a></li>
+                            <li><a class="dropdown-item small" href="#">Argentina</a></li>
+                            <li><a class="dropdown-item small" href="#">Chile</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal de detalle de hamburguesa -->
+    <div class="modal fade" id="hamburgerDetailModal" tabindex="-1" aria-labelledby="hamburgerDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="hamburgerDetailModalLabel">Detalle de Hamburguesa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        <img id="hamburger-img" src="" class="img-fluid rounded" alt="Imagen de hamburguesa" style="max-height: 200px;">
+                    </div>
+                    <h4 id="hamburger-name" class="fw-bold text-center mb-3"></h4>
+                    <p id="hamburger-description" class="mb-3"></p>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="rating">
+                            <span class="text-warning">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </span>
+                            <span id="hamburger-rating">4.5/5</span>
+                        </div>
+                        <div class="price">
+                            <span class="fw-bold" id="hamburger-price">€0.00</span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success" type="button">Añadir al carrito</button>
+                        <button class="btn btn-outline-primary" type="button">
+                            <i class="fas fa-camera me-2"></i> Ver en 3D con la cámara
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="../Js/script.js"></script>
+    <script src="Jscomida/comida.js"></script>
+</body>
+</html>
