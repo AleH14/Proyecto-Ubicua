@@ -41,7 +41,7 @@
         "imagen": "https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
         "precio": "€10.95",
         "rating": "4.6",
-        "ruta": "modelos3D/Hamburgesas/Cheeseburger.glb" 
+        "ruta": "modelos3D/Pizzas/DeliciousPizza.glb"
       },
       {
         "id": "pizza-2",
@@ -50,7 +50,7 @@
         "imagen": "https://images.unsplash.com/photo-1628840042765-356cda07504e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
         "precio": "€12.95",
         "rating": "4.8",
-        "ruta": "modelos3D/Hamburgesas/Cheeseburger.glb" 
+        "ruta": "modelos3D/Pizzas/Disembodiedpizza.glb"
       },
       {
         "id": "pizza-3",
@@ -59,7 +59,7 @@
         "imagen": "https://images.unsplash.com/photo-1548369937-47519962c11a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
         "precio": "€13.95",
         "rating": "4.7",
-        "ruta": "modelos3D/Hamburgesas/Cheeseburger.glb" 
+        "ruta": "modelos3D/Pizzas/PizzaPeperoni.glb" 
       }
     ]
   },
@@ -72,87 +72,251 @@
         "descripcion": "Selección de 12 piezas de sushi variado.",
         "imagen": "https://images.unsplash.com/photo-1563612116625-3012372fccce?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
         "precio": "€15.95",
-        "rating": "4.7",
-        "ruta": "modelos3D/Hamburgesas/Cheeseburger.glb" 
+        "rating": "3.7",
+        "ruta": "modelos3D/Asiatico/SushiMini.glb" 
       },
       {
         "id": "asiatica-2",
-        "nombre": "Pad Thai",
-        "descripcion": "Fideos de arroz salteados con huevo, tofu y cacahuetes.",
-        "imagen": "https://images.unsplash.com/photo-1559314809-0d155014e29e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+        "nombre": "Homenade Ramen",
+        "descripcion": "Fideos ramen, caldo de cerdo, huevo y verduras.",
+        "imagen": "https://recetasdecocina.elmundo.es/wp-content/uploads/2025/03/ramen-receta.jpg",
         "precio": "€11.95",
+        "rating": "4.1",
+        "ruta": "modelos3D/Asiatico/Homemade Ramen.glb" 
+      },
+      {
+        "id": "asiatica-3",
+        "nombre": "Sashimi de Salmón",
+        "descripcion": "Láminas de salmón fresco con salsa de soja.",
+        "imagen": " https://monstersushi.es/blog/wp-content/uploads/2022/06/Sushi-Clasic-Completo-scaled.jpg",
+        "precio": "€12.95",
         "rating": "4.5",
-        "ruta": "modelos3D/Hamburgesas/Cheeseburger.glb" 
+        "ruta": "modelos3D/Asiatico/Sashimi.glb" 
       }
+      ,{
+        "id": "asiatica-4",
+        "nombre": "Spicy Ramen",
+        "descripcion": "Fideos ramen picantes con pollo y verduras.",
+        "imagen": "https://www.kikkoman.es/fileadmin/_processed_/f/0/csm_1103-recipe-page-Spicy-Kimchi-Ramen-with-Pork_desktop_c8dc4e51e8.jpg",
+        "precio": "€15.95",
+        "rating": "4.5",
+        "ruta": "modelos3D/Asiatico/Spicy Ramen.glb" 
+      },
+{
+        "id": "asiatica-5",
+        "nombre": "sushi mini",
+        "descripcion": "Arroz, pescado crudo y alga nori.",
+        "imagen": "https://previews.123rf.com/images/jackf/jackf1907/jackf190705864/127795048-sushi-grande-en-la-mesa-del-restaurante-japon%C3%A9s.jpg",
+        "precio": "€16.95",
+        "rating": "4.6",
+        "ruta": "modelos3D/Asiatico/Suchi.glb" 
+      }
+
+     
     ]
   },
   "saludable": {
-    "nombre": "Comida Saludable",
+    "nombre": "Frutas",
     "productos": [
       {
-        "id": "saludable-1",
-        "nombre": "Bowl de Quinoa",
-        "descripcion": "Quinoa, aguacate, garbanzos y verduras.",
-        "imagen": "https://images.unsplash.com/photo-1576506295286-5cda18df43e7?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-        "precio": "€9.95",
-        "rating": "4.4",
-        "ruta": "modelos3D/Hamburgesas/Cheeseburger.glb" 
+        "id": "Fruta-1",
+        "nombre": "Manzana",
+        "descripcion": "Fruta fresca y crujiente.",
+        "imagen": "https://www.gustavoferrada.es/wp-content/uploads/2019/10/manzana-verde-grany-1.jpg",
+        "precio": "€0.95",
+        "rating": "4.",
+        "ruta": "modelos3D/Fruta/Apple.glb" 
       },
       {
-        "id": "saludable-2",
-        "nombre": "Ensalada César",
-        "descripcion": "Lechuga, pollo, picatostes, queso parmesano y salsa césar.",
-        "imagen": "https://images.unsplash.com/photo-1550304943-4f24f54ddde9?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-        "precio": "€8.95",
+        "id": "Fruta-2",
+        "nombre": "Banana",
+        "descripcion": "Fruta dulce y rica en potasio.",
+       "imagen":"https://resizer.glanacion.com/resizer/v2/es-una-de-las-frutas-mas-practicas-y-versatiles-BJB5RPAYRNEOTK6D7JAHQ6ZCCA.jpg?auth=df1322d6cf241632aaf3fe298f710954fce5a4cf0f7b521ba939e6681346e9a5&width=768&quality=70&smart=false",
+        "precio": "€0.75",
         "rating": "4.3",
-        "ruta": "modelos3D/Hamburgesas/Cheeseburger.glb" 
+        "ruta": "modelos3D/Fruta/banana.glb" 
+      },
+      {
+        "id": "Fruta-3",
+        "nombre": "Ensalda de frutas",
+        "descripcion": "Mezcla de frutas frescas.",
+        "imagen": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT14gsOgzqXhHotODVpiLc1eGW8JZusagojPQ&s",
+        "precio": "€1.25",
+        "rating": "4.2",
+        "ruta": "modelos3D/Fruta/Fruit bomb.glb" 
+      },
+      {
+        "id": "Fruta-4",
+        "nombre": "Naranja",
+        "descripcion": "Fruta cítrica y jugosa.",
+        "imagen": "https://as2.ftcdn.net/v2/jpg/04/20/70/97/1000_F_420709714_6WRLa14NhZ9gKE1UAjJJsxDld5WOMliJ.jpg",
+        "precio": "€0.50",
+        "rating": "4.7",
+        "ruta": "modelos3D/Fruta/Orange .glb" 
       }
+      ,
+      {
+        "id": "Fruta-5",
+        "nombre": "Piña",
+        "descripcion": "Fruta tropical y dulce.",
+        "imagen": "https://www.lechepuleva.es/documents/13930/203222/pi%C3%B1a_g.jpg/c585227d-e694-464d-87d7-3f2143dd33d9?t=1423480442000",
+        "precio": "€1.0",
+        "rating": "4.9",
+        "ruta": "modelos3D/Fruta/Pineapple.glb" 
+      }
+    
     ]
+
   },
   "postres": {
-    "nombre": "Postres Deliciosos",
+    "nombre": "Golosinas Deliciosas",
     "productos": [
       {
-        "id": "postre-1",
-        "nombre": "Cheesecake",
-        "descripcion": "Tarta de queso con base de galleta y mermelada de fresa.",
-        "imagen": "https://images.unsplash.com/photo-1593246049226-ded77bf90326?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+        "id": "golosina-1",
+        "nombre": "Arepa",
+        "descripcion": "Arepa rellena de queso y jamón.",
+        "imagen": "https://i.blogs.es/f4a03e/arepas2/650_1200.jpg",
         "precio": "€5.95",
         "rating": "4.8",
-        "ruta": "modelos3D/Hamburgesas/Cheeseburger.glb" 
+        "ruta": "modelos3D/Golosinas/Arepa.glb" 
       },
       {
-        "id": "postre-2",
-        "nombre": "Brownie con Helado",
-        "descripcion": "Brownie de chocolate con helado de vainilla.",
-        "imagen": "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+        "id": "golosina-2",
+        "nombre": "Cookies",
+        "descripcion": "Galletas de chocolate y nueces.",
+        "imagen": "https://cdn.craft.cloud/224393fa-1975-4d80-9067-ada3cb5948ca/assets/Soft-and-Chewy-Chocolate-Chip-Cookie-Recipe-450x300_2022.jpg",
         "precio": "€6.95",
         "rating": "4.9",
-        "ruta": "modelos3D/Hamburgesas/Cheeseburger.glb" 
+        "ruta": "modelos3D/Golosinas/Cokie.glb" 
+      }
+      ,
+      {
+        "id": "golosina-3",
+        "nombre": "Lays",
+        "descripcion": "Patatas fritas con sabor a barbacoa.",
+        "imagen": "https://m.media-amazon.com/images/I/81TLFU5Yj6L._SL1500_.jpg",
+        "precio": "€6.95",
+        "rating": "4.9",
+        "ruta": "modelos3D/Golosinas/Lays.glb" 
       }
     ]
   },
-  "bebidas": {
-    "nombre": "Bebidas Refrescantes",
+  "pan": {
+    "nombre": "Pan delicioso",
     "productos": [
       {
-        "id": "bebida-1",
-        "nombre": "Smoothie de Frutas",
-        "descripcion": "Batido de frutas frescas con yogurt.",
-        "imagen": "https://images.unsplash.com/photo-1527661591475-527312dd65f5?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+        "id": "pan-1",
+        "nombre": "Croissant",
+        "descripcion": "Croissant de mantequilla.",
+        "imagen": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/2018_01_Croissant_IMG_0685.JPG/960px-2018_01_Croissant_IMG_0685.JPG",
         "precio": "€4.95",
         "rating": "4.5",
-        "ruta": "modelos3D/Hamburgesas/Cheeseburger.glb" 
+        "ruta": "modelos3D/Pan/Croissant.glb" 
       },
       {
-        "id": "bebida-2",
-        "nombre": "Limonada Casera",
-        "descripcion": "Limonada natural con menta y azúcar.",
-        "imagen": "https://images.unsplash.com/photo-1560526860-1f0e56bf5464?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+        "id": "pan-2",
+        "nombre": "Cupcake",
+        "descripcion": "Bizcocho con crema de chocolate.",
+        "imagen": "https://www.amytreasure.com/wp-content/uploads/2021/06/Vanilla-Cupcakes-1200-x-1200-2-735x735.jpg",
         "precio": "€3.95",
         "rating": "4.6",
-        "ruta": "modelos3D/Hamburgesas/Cheeseburger.glb" 
+        "ruta": "modelos3D/Pan/Cupcake.glb" 
       }
+      ,
+      {
+        "id": "pan-3",
+        "nombre": "Pan",
+        "descripcion": "Pan de molde.",
+        "imagen": "https://lesaffre.es/wp-content/uploads/2017/04/pan-corteza-blanda.jpg",
+        "precio": "€3.95",
+        "rating": "4.6",
+        "ruta": "modelos3D/Pan/Pan.glb" 
+      }
+    ]
+  }
+  ,
+  "pasteles": {
+    "nombre": "Pasteles delicioso",
+    "productos": [
+      {
+        "id": "pasteles-1",
+        "nombre": "Pastel de chocolate",
+        "descripcion": "Pastel de chocolate con crema.",
+        "imagen": "https://assets.tmecosys.com/image/upload/t_web_rdp_recipe_584x480_1_5x/img/recipe/ras/Assets/5054EE1D-15EE-412C-8AA1-72A4DA244E34/Derivates/90ADA8E1-6472-4BC8-9846-E06D88BE4211.jpg",
+        "precio": "€4.95",
+        "rating": "4.5",
+        "ruta": "modelos3D/Pasteles/chocolate.glb" 
+      },
+      {
+        "id": "pasteles-2",
+        "nombre": "Pastel Lilac",
+        "descripcion": "Bizcocho con crema.",
+        "imagen": "https://www.sorprendelima.pe/cdn/shop/files/TortaFloral1200_550x.png?v=1722619970",
+        "precio": "€3.95",
+        "rating": "4.6",
+        "ruta": "modelos3D/Pasteles/Mothers.glb" 
+      }
+      ,
+      {
+        "id": "pasteles-3",
+        "nombre": "Strawberry Cake",
+        "descripcion": "Bizcocho con crema de fresa.",
+        "imagen": "https://earthly-provisions.com/wp-content/uploads/2024/05/Vegan-Strawberry-Shortcake-Cake-10.jpg",
+        "precio": "€3.95",
+        "rating": "4.6",
+        "ruta": "modelos3D/Pasteles/Strawberry.glb" 
+      }
+    ]
+  }
+  ,
+  "pollo": {
+    "nombre": "pollos delicioso",
+    "productos": [
+      {
+        "id": "pollo-1",
+        "nombre": "alitas de pollo",
+        "descripcion": "Alitas de pollo fritas.",
+        "imagen": "https://www.javirecetas.com/wp-content/uploads/2021/10/alitas-de-pollo-al-horno.jpg",
+        "precio": "€4.95",
+        "rating": "4.5",
+        "ruta": "modelos3D/Pollo/Alitas.glb" 
+      },
+      {
+        "id": "pollo-2",
+        "nombre": "Nuggets Mcdonalds",
+        "descripcion": "Nuggets de pollo fritos.",
+        "imagen": "https://media.telemundo51.com/2023/09/tlmd-chicken-nuggets-picantes-1.jpg?quality=85&strip=all&resize=1200%2C675",
+        "precio": "€3.95",
+        "rating": "4.6",
+        "ruta": "modelos3D/Pollo/nuggets.glb" 
+      }
+      ,
+      {
+        "id": "pollo-3",
+        "nombre": "Pollo completo",
+        "descripcion": "Pollo asado con especias.",
+        "imagen": "https://myplate-prod.azureedge.us/sites/default/files/styles/large/public/2021-09/OvenRoastedChicken_527x323.jpg?itok=cnlnt4vd",
+        "precio": "€3.95",
+        "rating": "4.6",
+        "ruta": "modelos3D/Pollo/Pollo.glb" 
+      }
+    ]
+  }
+  ,
+  "tacos": {
+    "nombre": "Tacos delicioso",
+    "productos": [
+
+      {
+        "id": "tacos-1",
+        "nombre": "Tacos",
+        "descripcion": "Tacos de pollo con guarnición.",
+        "imagen": "https://imag.bonviveur.com/presentacion-principal-de-los-tacos-mexicanos-de-carne.jpg",
+        "precio": "€3.95",
+        "rating": "4.6",
+        "ruta": "modelos3D/Tacos/Tacos.glb" 
+      }
+
     ]
   }
 }
