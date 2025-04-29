@@ -81,22 +81,63 @@ function cargarProductos(productos) {
     });
 }
 
+// Función para mostrar alertas temporales
+function mostrarAlertaTemporal(mensaje, tipo = 'danger') {
+    // Crear contenedor para el mensaje si no existe
+    let alertaContainer = document.getElementById('alerta-temporal');
+    if (!alertaContainer) {
+        alertaContainer = document.createElement('div');
+        alertaContainer.id = 'alerta-temporal';
+        alertaContainer.style.position = 'fixed';
+        alertaContainer.style.top = '20px';
+        alertaContainer.style.right = '20px';
+        alertaContainer.style.zIndex = '9999';
+        document.body.appendChild(alertaContainer);
+    }
+    
+    // Crear la alerta
+    const alerta = document.createElement('div');
+    alerta.className = `alert alert-${tipo} alert-dismissible fade show`;
+    alerta.innerHTML = `
+        ${mensaje}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    // Añadir alerta al contenedor
+    alertaContainer.appendChild(alerta);
+    
+    // Eliminar automáticamente después de 5 segundos
+    setTimeout(() => {
+        alerta.classList.remove('show');
+        setTimeout(() => alerta.remove(), 300);
+    }, 5000);
+}
+
 // Simplifica la función ejecutarModelo para que solo envíe la solicitud sin mostrar resultados
 async function ejecutarModelo(modelo) {
     try {
         console.log('Enviando solicitud para cargar modelo:', modelo);
         
         // Solo envía la solicitud al servidor con la ruta del modelo
-        await fetch('http://127.0.0.1:5000/run-script', {
+        const respuesta = await fetch('http://127.0.0.1:5000/run-script', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ modelo }) // Enviar el modelo al servidor
         });
         
+        // Verificar si la respuesta es exitosa
+        if (!respuesta.ok) {
+            const errorData = await respuesta.json().catch(() => ({}));
+            throw new Error(errorData.message || `Error del servidor: ${respuesta.status}`);
+        }
+        
         // No mostramos ningún resultado en la interfaz
     } catch (error) {
-        // Solo registramos el error en la consola para depuración
+        // Registramos el error en la consola para depuración
         console.error('Error en la solicitud:', error);
+        
+        // Mostrar mensaje de error en la interfaz
+        mostrarAlertaTemporal(`Error al cargar el modelo 3D: ${error.message || 'No se pudo conectar con el servidor'}`);
     }
 }
 

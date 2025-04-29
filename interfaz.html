@@ -84,7 +84,7 @@
         <div class="row align-items-center bg-light rounded-4 overflow-hidden">
             <div class="col-lg-6 py-5 px-4 px-lg-5">
                 <h1 class="display-5 fw-bold mb-3">Comida a domicilio en minutos</h1>
-                <p class="lead mb-
+                <p class="lead mb-4">Los mejores restaurantes en la puerta de tu casa con un solo clic.</p>
                 <div class="d-flex flex-wrap gap-2">
                     <a href="#restaurantes" class="btn btn-success btn-lg px-4">Ver restaurantes</a>
                     <a href="#" class="btn btn-outline-dark btn-lg px-4">Ofertas del día</a>
@@ -102,66 +102,12 @@
 <section class="mb-5">
     <div class="container">
         <h2 class="fw-bold mb-4">Explora por categorías</h2>
-        <div class="row g-3">
-            <div class="col-6 col-md-4 col-lg-2">
-                <a href="Categorias/categorias.html?categoria=pizza" class="text-decoration-none">
-                    <div class="category-card shadow-sm">
-                        <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80" class="img-fluid w-100" alt="Pizza">
-                        <div class="p-2 text-center">
-                            <h6 class="m-0">Pizza</h6>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-lg-2">
-                <a href="Categorias/categorias.html?categoria=hamburguesas" class="text-decoration-none">
-                    <div class="category-card shadow-sm">
-                        <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80" class="img-fluid w-100" alt="Hamburguesas">
-                        <div class="p-2 text-center">
-                            <h6 class="m-0">Hamburguesas</h6>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-lg-2">
-                <a href="Categorias/categorias.html?categoria=asiatica" class="text-decoration-none">
-                    <div class="category-card shadow-sm">
-                        <img src="https://images.unsplash.com/photo-1563612116625-3012372fccce?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80" class="img-fluid w-100" alt="Asiática">
-                        <div class="p-2 text-center">
-                            <h6 class="m-0">Asiática</h6>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-lg-2">
-                <a href="Categorias/categorias.html?categoria=saludable" class="text-decoration-none">
-                    <div class="category-card shadow-sm">
-                        <img src="https://images.unsplash.com/photo-1576506295286-5cda18df43e7?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80" class="img-fluid w-100" alt="Comida sana">
-                        <div class="p-2 text-center">
-                            <h6 class="m-0">Comida sana</h6>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-lg-2">
-                <a href="Categorias/categorias.html?categoria=postres" class="text-decoration-none">
-                    <div class="category-card shadow-sm">
-                        <img src="https://images.unsplash.com/photo-1593246049226-ded77bf90326?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80" class="img-fluid w-100" alt="Postres">
-                        <div class="p-2 text-center">
-                            <h6 class="m-0">Postres</h6>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-6 col-md-4 col-lg-2">
-                <a href="Categorias/categorias.html?categoria=bebidas" class="text-decoration-none">
-                    <div class="category-card shadow-sm">
-                        <img src="https://images.unsplash.com/photo-1527661591475-527312dd65f5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80" class="img-fluid w-100" alt="Bebidas">
-                        <div class="p-2 text-center">
-                            <h6 class="m-0">Bebidas</h6>
-                        </div>
-                    </div>
-                </a>
+        <div class="row g-3" id="categorias-container">
+            <!-- Las categorías se cargarán dinámicamente desde el JSON -->
+            <div class="col-12 text-center py-5" id="categorias-loading">
+                <div class="spinner-border text-success" role="status">
+                    <span class="visually-hidden">Cargando categorías...</span>
+                </div>
             </div>
         </div>
     </div>
@@ -247,15 +193,41 @@
     </div>
 </section>
 
-<!-- Botón de asistente de voz -->
-<div class="voice-assistant-btn shadow" id="voiceAssistantBtn">
-    <i class="fas fa-microphone"></i>
+<!-- Asistente virtual (chat y voz) -->
+<div class="assistant-container">
+    <!-- Botón del asistente -->
+    <div class="assistant-btn shadow" id="assistantBtn">
+        <i class="fas fa-comment-dots"></i>
+    </div>
+    
+    <!-- Panel de chat -->
+    <div class="chat-panel shadow-lg" id="chatPanel">
+        <div class="chat-header">
+            <h6 class="m-0">Asistente FoodDelivery</h6>
+            <div>
+                <button class="btn btn-sm text-white" id="voiceToggleBtn">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button class="btn btn-sm text-white" id="closeChatBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="message assistant">
+                <div class="message-content">
+                    Hola 👋 ¿En qué puedo ayudarte hoy?
+                </div>
+            </div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" class="form-control" id="chatInput" placeholder="Escribe tu mensaje...">
+            <button class="btn btn-success" id="sendMessageBtn">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
 </div>
-
-
-<script>
-
-</script>
 
 <!-- Footer -->
     <footer class="bg-dark text-white pt-5 pb-4 mt-5">
@@ -346,10 +318,9 @@
             </div>
         </div>
     </footer>
-
-    <!-- Bootstrap JavaScript Bundle con Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="Js/script.js"></script>
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="Js/script.js"></script>
+<script src="Js/cargarCategorias.js"></script>
 
 </body>
 </html>

@@ -1,0 +1,61 @@
+{
+    "categorias": [
+      {
+        "id": "pizza",
+        "nombre": "Pizza",
+        "imagen": "https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80",
+        "url": "Categorias/categorias.html?categoria=pizza"
+      },
+      {
+        "id": "hamburguesas",
+        "nombre": "Hamburguesas",
+        "imagen": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&q=80",
+        "url": "Categorias/categorias.html?categoria=hamburguesas"
+      },
+      {
+        "id": "asiatica",
+        "nombre": "Asiática",
+        "imagen": "https://i0.wp.com/acordesdevino.com/wp-content/uploads/2021/01/sush-y-sashimi.jpg?fit=600%2C400&ssl=1",
+        "url": "Categorias/categorias.html?categoria=asiatica"
+      },
+      {
+        "id": "saludable",
+        "nombre": "Frutas y Verduras",
+        "imagen": "https://s1.elespanol.com/2018/11/21/ciencia/nutricion/nutricion-frutas-higiene_354976032_106782953_1024x576.jpg",
+        "url": "Categorias/categorias.html?categoria=saludable"
+      },
+      {
+        "id": "golosinas",
+        "nombre": "Golosinas",
+        "imagen": "https://www.familiaysalud.es/sites/default/files/styles/article_image/public/chucherias.jpg?itok=R-z9fHNR",
+        "url": "Categorias/categorias.html?categoria=postres"
+      },
+      {
+        "id": "pan",
+        "nombre": "Pan",
+        "imagen": "https://i.etsystatic.com/26986077/r/il/1e5652/2931350690/il_570xN.2931350690_44zj.jpg",
+        "url": "Categorias/categorias.html?categoria=pan"
+      }
+      ,
+      {
+        "id": "pasteles",
+        "nombre": "Pasteles",
+        "imagen": "https://www.erlenbacher.de/images/default-source/featurebild-1920x904-px/m_gruppetorten_f_1920x904.jpg?sfvrsn=2fad347_1",
+        "url": "Categorias/categorias.html?categoria=pasteles"
+      }
+      ,
+      {
+        "id": "pollo",
+        "nombre": "Pollos",
+        "imagen": "https://www.hola.com/horizon/square/22d6fbad7436-recetas-de-pollo-al-horno-t.jpg?im=Resize=(640),type=downsize",
+        "url": "Categorias/categorias.html?categoria=pollo"
+      }
+      ,
+      {
+        "id": "tacos",
+        "nombre": "Tacos",
+        "imagen": "https://veggiefestchicago.org/wp-content/uploads/2022/02/Classic-Tacos-B-Wb-1.jpg",
+        "url": "Categorias/categorias.html?categoria=tacos"
+      }
+    ]
+  }

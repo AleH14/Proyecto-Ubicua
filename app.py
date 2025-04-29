@@ -2,10 +2,32 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import subprocess
 import os
+# Importar el módulo testAI
+from ModelAI.testAI import get_ai_response
 
 app = Flask(__name__)
 CORS(app)  # Habilita CORS para todas las rutas
 
+@app.route('/chat', methods=['POST'])
+def chat():
+    try:
+        # Obtén el mensaje del cuerpo de la solicitud
+        data = request.get_json()
+        user_message = data.get('message', '')
+        
+        if not user_message:
+            return jsonify({"error": "El mensaje está vacío"}), 400
+        
+        # Utilizar la función importada de testAI.py
+        response_text = get_ai_response(user_message)
+        
+        return jsonify({"response": response_text})
+    
+    except Exception as e:
+        print(f"Error en /chat: {str(e)}")
+        return jsonify({"error": f"Error al procesar la solicitud: {str(e)}"}), 500
+
+# Mantén tu endpoint original
 @app.route('/run-script', methods=['POST'])
 def run_script():
     try:

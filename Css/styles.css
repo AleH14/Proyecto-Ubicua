@@ -94,10 +94,15 @@
     background-color: white;
 }
 
-.voice-assistant-btn {
+/* Estilos para el asistente virtual */
+.assistant-container {
     position: fixed;
     bottom: 30px;
     right: 30px;
+    z-index: 1000;
+}
+
+.assistant-btn {
     width: 60px;
     height: 60px;
     border-radius: 50%;
@@ -108,38 +113,105 @@
     align-items: center;
     font-size: 24px;
     cursor: pointer;
-    z-index: 1000;
+    z-index: 1001;
     transition: all 0.3s ease;
 }
 
-.voice-assistant-btn:hover {
+.assistant-btn:hover {
     transform: scale(1.1);
     box-shadow: 0 4px 20px rgba(6, 193, 103, 0.4);
 }
 
-.voice-assistant-btn.active {
+.assistant-btn.active {
     animation: pulse 1.5s infinite;
 }
 
-@keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(6, 193, 103, 0.7); }
-    70% { box-shadow: 0 0 0 15px rgba(6, 193, 103, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(6, 193, 103, 0); }
-}
-/* Añadir estos estilos a tu archivo CSS */
-.product-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.product-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-}
-
-.product-card img {
-    transition: opacity 0.3s ease;
+.chat-panel {
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    width: 350px;
+    height: 450px;
+    background-color: white;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    display: none;
 }
 
-.product-card:hover img {
-    opacity: 0.9;
+.chat-header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.chat-footer {
+    padding: 10px 15px;
+    display: flex;
+    gap: 10px;
+    border-top: 1px solid #eee;
+}
+
+.message {
+    max-width: 80%;
+    padding: 10px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+}
+
+.message.user {
+    align-self: flex-end;
+    background-color: #e6f7f2;
+    border-bottom-right-radius: 5px;
+}
+
+.message.assistant {
+    align-self: flex-start;
+    background-color: #f2f2f2;
+    border-bottom-left-radius: 5px;
+}
+
+/* Estilos para el indicador de escritura */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 2px;
+}
+
+.typing-indicator span {
+    width: 7px;
+    height: 7px;
+    background-color: #777;
+    border-radius: 50%;
+    display: inline-block;
+    animation: typing 1.2s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(1) { 
+    animation-delay: 0s; 
+}
+.typing-indicator span:nth-child(2) { 
+    animation-delay: 0.2s; 
+}
+.typing-indicator span:nth-child(3) { 
+    animation-delay: 0.4s; 
+}
+
+@keyframes typing {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-4px); }
 }
