@@ -321,6 +321,50 @@
  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="Js/script.js"></script>
 <script src="Js/cargarCategorias.js"></script>
+<script src="Js/auth.js"></script>
+<script>
+    // Verificar autenticación al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        const user = obtenerUsuario();
+        
+        // Si hay usuario logueado, actualizar la interfaz
+        if (user) {
+            // Encontrar el menú de navegación
+            const navbarNav = document.querySelector('.navbar-nav');
+            
+            // Si hay botones de login/registro, quitarlos
+            const loginItem = document.querySelector('.nav-item a[href="login.html"]');
+            const registroItem = document.querySelector('.nav-item a[href="registro.html"]');
+            
+            if (loginItem) loginItem.parentElement.remove();
+            if (registroItem) registroItem.parentElement.remove();
+            
+            // Añadir menú de usuario
+            const userMenuItem = document.createElement('li');
+            userMenuItem.className = 'nav-item dropdown';
+            userMenuItem.innerHTML = `
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-user-circle me-1"></i> ${user.nombre}
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item small" href="#"><i class="fas fa-user me-2"></i>Mi perfil</a></li>
+                    <li><a class="dropdown-item small" href="#"><i class="fas fa-history me-2"></i>Mis pedidos</a></li>
+                    <li><a class="dropdown-item small" href="#"><i class="fas fa-map-marker-alt me-2"></i>Mis direcciones</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item small" href="#" id="logoutBtn"><i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión</a></li>
+                </ul>
+            `;
+            
+            navbarNav.appendChild(userMenuItem);
+            
+            // Añadir evento para cerrar sesión
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                cerrarSesion();
+            });
+        }
+    });
+</script>
 
 </body>
 </html>

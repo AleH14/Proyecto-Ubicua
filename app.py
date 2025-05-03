@@ -2,11 +2,174 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import subprocess
 import os
+import bcrypt
+import jwt
+import datetime
+from pymongo import MongoClient
 # Importar el módulo testAI
 from ModelAI.testAI import get_ai_response
 
 app = Flask(__name__)
 CORS(app)  # Habilita CORS para todas las rutas
+
+# Configuración MongoDB
+try:
+    # Conectar a MongoDB - actualiza la URL si usas Atlas o un host diferente
+    client = MongoClient('mongodb://localhost:27017/')
+    db = client['fooddelivery']
+    users_collection = db['users']
+    print("✅ Conexión a MongoDB establecida")
+except Exception as e:
+    print(f"❌ Error conectando a MongoDB: {e}")
+
+# Clave secreta para JWT
+SECRET_KEY = 'tu_clave_secreta_cambiar_en_produccion'
+
+# Función para generar tokens JWT
+def generate_token(user_id):
+    payload = {
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),
+        'iat': datetime.datetime.utcnow(),
+        'sub': str(user_id)
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+
+# Middleware para proteger rutas
+def token_required(f):
+    def decorated(*args, **kwargs):
+        token = None
+        
+        # Verificar si hay token en el header
+        if 'Authorization' in request.headers:
+            auth_header = request.headers['Authorization']
+            try:
+                token = auth_header.split(" ")[1]
+            except IndexError:
+                return jsonify({'message': 'Token inválido'}), 401
+
+        if not token:
+            return jsonify({'message': 'Token no proporcionado'}), 401
+
+        try:
+            # Decodificar token
+            data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            current_user = users_collection.find_one({'_id': data['sub']})
+            
+            if not current_user:
+                return jsonify({'message': 'Usuario no encontrado'}), 401
+                
+        except Exception as e:
+            return jsonify({'message': f'Token inválido: {str(e)}'}), 401
+            
+        return f(current_user, *args, **kwargs)
+    
+    # Renombrar la función para que Flask la reconozca correctamente
+    decorated.__name__ = f.__name__
+    return decorated
+
+# Ruta para el registro de usuarios
+@app.route('/api/auth/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    
+    # Validar datos requeridos
+    required_fields = ['nombre', 'apellidos', 'email', 'password']
+    for field in required_fields:
+        if field not in data:
+            return jsonify({'success': False, 'error': f'Falta el campo {field}'}), 400
+    
+    # Verificar si el usuario ya existe
+    if users_collection.find_one({'email': data['email']}):
+        return jsonify({'success': False, 'error': 'El correo electrónico ya está registrado'}), 400
+    
+    # Hash de la contraseña
+    hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
+    
+    # Crear nuevo usuario
+    new_user = {
+        'nombre': data['nombre'],
+        'apellidos': data['apellidos'],
+        'email': data['email'],
+        'telefono': data.get('telefono', ''),
+        'password': hashed_password,
+        'fecha_registro': datetime.datetime.utcnow()
+    }
+    
+    # Insertar en la base de datos
+    try:
+        result = users_collection.insert_one(new_user)
+        user_id = str(result.inserted_id)
+        
+        # Generar token JWT
+        token = generate_token(user_id)
+        
+        # Devolver respuesta con token y datos del usuario (sin password)
+        user_data = {
+            'id': user_id,
+            'nombre': new_user['nombre'],
+            'apellidos': new_user['apellidos'],
+            'email': new_user['email']
+        }
+        
+        return jsonify({
+            'success': True,
+            'token': token,
+            'user': user_data
+        }), 201
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Error al registrar usuario: {str(e)}'}), 500
+
+# Ruta para el inicio de sesión
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    
+    # Validar datos requeridos
+    if 'email' not in data or 'password' not in data:
+        return jsonify({'success': False, 'error': 'Se requiere email y password'}), 400
+    
+    # Buscar usuario por email
+    user = users_collection.find_one({'email': data['email']})
+    
+    # Verificar si el usuario existe y la contraseña es correcta
+    if user and bcrypt.checkpw(data['password'].encode('utf-8'), user['password']):
+        # Generar token JWT
+        token = generate_token(str(user['_id']))
+        
+        # Devolver respuesta con token y datos del usuario (sin password)
+        user_data = {
+            'id': str(user['_id']),
+            'nombre': user['nombre'],
+            'apellidos': user['apellidos'],
+            'email': user['email']
+        }
+        
+        return jsonify({
+            'success': True,
+            'token': token,
+            'user': user_data
+        })
+    else:
+        return jsonify({'success': False, 'error': 'Credenciales inválidas'}), 401
+
+# Ruta para obtener perfil del usuario
+@app.route('/api/auth/profile', methods=['GET'])
+@token_required
+def get_profile(current_user):
+    # El usuario ya está disponible desde el decorador token_required
+    user_data = {
+        'id': str(current_user['_id']),
+        'nombre': current_user['nombre'],
+        'apellidos': current_user['apellidos'],
+        'email': current_user['email'],
+        'telefono': current_user.get('telefono', '')
+    }
+    
+    return jsonify({
+        'success': True,
+        'user': user_data
+    })
 
 @app.route('/chat', methods=['POST'])
 def chat():
