@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis compras | FoodDelivery</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="Css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="sticky-top shadow-sm">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white py-3">
+            <div class="container">
+                <a class="navbar-brand text-success" href="interfaz.html">
+                    <i class="fas fa-utensils me-2"></i>FoodDelivery
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarContent">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="interfaz.html"><i class="fas fa-home me-1"></i> Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#"><i class="fas fa-th-large me-1"></i> Categorías</a>
+                        </li>
+                        <!-- El menú de usuario se insertará aquí dinámicamente -->
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Contenido principal -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="fw-bold mb-4"><i class="fas fa-shopping-bag me-2"></i>Mis compras</h2>
+            
+            <div class="row">
+                <div class="col-12">
+                    <!-- Estado de carga -->
+                    <div id="loading" class="text-center py-5">
+                        <div class="spinner-border text-success" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                        <p class="mt-2">Cargando tus compras...</p>
+                    </div>
+                    
+                    <!-- Contenedor de órdenes -->
+                    <div id="orders-container"></div>
+                    
+                    <!-- Mensaje cuando no hay órdenes -->
+                    <div id="no-orders" class="text-center py-5" style="display: none;">
+                        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                        <h4>Aún no tienes compras</h4>
+                        <p class="text-muted">Explora nuestro catálogo y añade productos</p>
+                        <a href="interfaz.html" class="btn btn-success mt-3">Ver productos</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white pt-5 pb-4 mt-5">
+        <!-- Contenido del footer existente -->
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="Js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar si el usuario está autenticado
+            verificarAutenticacion(true, 'login.html');
+            
+            // Cargar las órdenes del usuario
+            cargarOrdenes();
+            
+            // Actualizar la interfaz con los datos del usuario
+            actualizarMenuUsuario();
+        });
+        
+        async function cargarOrdenes() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No hay sesión activa');
+                }
+                
+                const response = await fetch('http://localhost:5000/api/orders/user', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                // Ocultar el estado de carga
+                document.getElementById('loading').style.display = 'none';
+                
+                if (!data.success) {
+                    throw new Error(data.error || 'Error al obtener las órdenes');
+                }
+                
+                // Si no hay órdenes, mostrar mensaje
+                if (data.orders.length === 0) {
+                    document.getElementById('no-orders').style.display = 'block';
+                    return;
+                }
+                
+                // Mostrar las órdenes
+                const container = document.getElementById('orders-container');
+                
+                // Agrupar órdenes por fecha
+                const ordenesPorFecha = agruparOrdenesPorFecha(data.orders);
+                
+                // Mostrar cada grupo de órdenes
+                for (const [fecha, ordenes] of Object.entries(ordenesPorFecha)) {
+                    const fechaFormateada = new Date(fecha).toLocaleDateString('es-ES', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                    
+                    // Crear sección para esta fecha
+                    const seccionFecha = document.createElement('div');
+                    seccionFecha.className = 'mb-4';
+                    seccionFecha.innerHTML = `
+                        <h4 class="border-bottom pb-2 mb-3">${fechaFormateada}</h4>
+                    `;
+                    
+                    // Crear tabla para las órdenes de esta fecha
+                    const tabla = document.createElement('div');
+                    tabla.className = 'table-responsive';
+                    tabla.innerHTML = `
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Precio</th>
+                                    <th>Cantidad</th>
+                                    <th>Total</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    `;
+                    
+                    // Añadir cada orden a la tabla
+                    const tbody = tabla.querySelector('tbody');
+                    ordenes.forEach(orden => {
+                        const fila = document.createElement('tr');
+                        
+                        // Mapear estados a textos y clases de badge
+                        const estadoInfo = {
+                            'pending': { text: 'Pendiente', class: 'bg-warning' },
+                            'completed': { text: 'Completado', class: 'bg-success' },
+                            'cancelled': { text: 'Cancelado', class: 'bg-danger' }
+                        };
+                        
+                        const estadoActual = estadoInfo[orden.status] || { text: 'Desconocido', class: 'bg-secondary' };
+                        
+                        fila.innerHTML = `
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    ${orden.productImage ? 
+                                        `<img src="${orden.productImage}" alt="${orden.productName}" class="me-2" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">` :
+                                        `<div class="bg-light me-2" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 4px;">
+                                            <i class="fas fa-utensils text-muted"></i>
+                                        </div>`
+                                    }
+                                    <div>
+                                        <div class="fw-medium">${orden.productName}</div>
+                                        <small class="text-muted">${orden.categoria || 'Sin categoría'}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>${orden.price}</td>
+                            <td>${orden.quantity}</td>
+                            <td>€${orden.total.toFixed(2)}</td>
+                            <td><span class="badge ${estadoActual.class}">${estadoActual.text}</span></td>
+                        `;
+                        
+                        tbody.appendChild(fila);
+                    });
+                    
+                    // Añadir tabla a la sección de esta fecha
+                    seccionFecha.appendChild(tabla);
+                    
+                    // Añadir sección al contenedor principal
+                    container.appendChild(seccionFecha);
+                }
+                
+            } catch (error) {
+                console.error('Error al cargar órdenes:', error);
+                document.getElementById('loading').style.display = 'none';
+                
+                // Mostrar mensaje de error
+                const container = document.getElementById('orders-container');
+                container.innerHTML = `
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i> 
+                        Error al cargar tus compras: ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        function agruparOrdenesPorFecha(ordenes) {
+            const grupos = {};
+            
+            ordenes.forEach(orden => {
+                // Obtener solo la fecha (sin la hora)
+                const fecha = new Date(orden.date).toISOString().split('T')[0];
+                
+                if (!grupos[fecha]) {
+                    grupos[fecha] = [];
+                }
+                
+                grupos[fecha].push(orden);
+            });
+            
+            // Ordenar las fechas de más reciente a más antigua
+            return Object.fromEntries(
+                Object.entries(grupos).sort(([fechaA], [fechaB]) => 
+                    new Date(fechaB) - new Date(fechaA)
+                )
+            );
+        }
+        
+        function actualizarMenuUsuario() {
+            const user = obtenerUsuario();
+            if (user) {
+                const navbarNav = document.querySelector('.navbar-nav');
+                
+                // Crear el elemento del menú desplegable si no existe
+                let userMenuItem = document.querySelector('.user-menu');
+                if (!userMenuItem) {
+                    userMenuItem = document.createElement('li');
+                    userMenuItem.className = 'nav-item dropdown user-menu';
+                    userMenuItem.innerHTML = `
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i> ${user.nombre}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Mi perfil</a></li>
+                            <li><a class="dropdown-item active" href="mis-compras.html"><i class="fas fa-shopping-bag me-2"></i>Mis compras</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn"><i class="fas fa-sign-out-alt me-2"></i>Cerrar sesión</a></li>
+                        </ul>
+                    `;
+                    
+                    navbarNav.appendChild(userMenuItem);
+                    
+                    // Añadir evento para cerrar sesión
+                    document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                        e.preventDefault();
+                        cerrarSesion();
+                    });
+                }
+            }
+        }
+    </script>
+</body>
+</html>

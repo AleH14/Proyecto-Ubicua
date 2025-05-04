@@ -6,6 +6,7 @@ import bcrypt
 import jwt
 import datetime
 from pymongo import MongoClient
+from bson.objectid import ObjectId  # Importa esto
 # Importar el módulo testAI
 from ModelAI.testAI import get_ai_response
 
@@ -18,6 +19,8 @@ try:
     client = MongoClient('mongodb://localhost:27017/')
     db = client['fooddelivery']
     users_collection = db['users']
+    orders_collection = db['orders']
+    print("✅ Colecciones disponibles:", db.list_collection_names())
     print("✅ Conexión a MongoDB establecida")
 except Exception as e:
     print(f"❌ Error conectando a MongoDB: {e}")
@@ -53,7 +56,7 @@ def token_required(f):
         try:
             # Decodificar token
             data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-            current_user = users_collection.find_one({'_id': data['sub']})
+            current_user = users_collection.find_one({'_id': ObjectId(data['sub'])})
             
             if not current_user:
                 return jsonify({'message': 'Usuario no encontrado'}), 401
@@ -223,6 +226,71 @@ def run_script():
             return jsonify({"message": "Error al ejecutar el script", "error": result.stderr}), 500
     except Exception as e:
         return jsonify({"message": "Error interno del servidor", "error": str(e)}), 500
+
+# Añade esto en app.py junto a las demás rutas
+@app.route('/api/orders/create', methods=['POST'])
+@token_required
+def create_order(current_user):
+    data = request.get_json()
+    
+    # Validar datos requeridos
+    required_fields = ['productId', 'productName', 'price', 'quantity']
+    for field in required_fields:
+        if field not in data:
+            return jsonify({'success': False, 'error': f'Falta el campo {field}'}), 400
+    
+    # Crear la orden con la información del producto y el usuario
+    new_order = {
+        'userId': str(current_user['_id']),
+        'productId': data['productId'],
+        'productName': data['productName'],
+        'price': data['price'],
+        'quantity': data.get('quantity', 1),
+        'total': float(data['price'].replace('€', '').strip()) * data.get('quantity', 1),
+        'date': datetime.datetime.utcnow(),
+        'status': 'pending'  # puede ser: pending, completed, cancelled
+    }
+    
+    # Si hay más detalles del producto, los añadimos
+    if 'productImage' in data:
+        new_order['productImage'] = data['productImage']
+    if 'categoria' in data:
+        new_order['categoria'] = data['categoria']
+    
+    try:
+        # Insertar en la colección de órdenes
+        orders_collection = db['orders']
+        result = orders_collection.insert_one(new_order)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Orden creada con éxito',
+            'orderId': str(result.inserted_id)
+        }), 201
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Error al crear la orden: {str(e)}'}), 500
+
+# Endpoint para obtener todas las órdenes de un usuario
+@app.route('/api/orders/user', methods=['GET'])
+@token_required
+def get_user_orders(current_user):
+    try:
+        # Obtener las órdenes del usuario actual
+        orders_collection = db['orders']
+        orders = list(orders_collection.find({'userId': str(current_user['_id'])}))
+        
+        # Convertir ObjectId a string para la serialización JSON
+        for order in orders:
+            order['_id'] = str(order['_id'])
+        
+        return jsonify({
+            'success': True,
+            'orders': orders
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'Error al obtener las órdenes: {str(e)}'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

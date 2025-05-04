@@ -1,3 +1,5 @@
+let compraEnProceso = false;
+
 document.addEventListener('DOMContentLoaded', function() {
     // Obtener la categoría de la URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -37,6 +39,9 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
             mostrarError('Error al cargar los productos');
         });
+    
+    // Añadir evento al botón de compra
+    document.getElementById('btn-comprar').addEventListener('click', procesarCompra);
     
     // Resto del código dentro de DOMContentLoaded...
 });
@@ -81,7 +86,7 @@ function cargarProductos(productos) {
     });
 }
 
-// Función para mostrar alertas temporales
+// Función para mostrar alertas temporalesñ
 function mostrarAlertaTemporal(mensaje, tipo = 'danger') {
     // Crear contenedor para el mensaje si no existe
     let alertaContainer = document.getElementById('alerta-temporal');
@@ -149,6 +154,18 @@ function cargarDetalleProducto(id, nombre, descripcion, imagen, precio, rating, 
     document.getElementById('producto-price').textContent = precio;
     document.getElementById('producto-rating').textContent = rating;
     
+    // Guardar el ID del producto como atributo de datos
+    const btnComprar = document.getElementById('btn-comprar');
+    btnComprar.dataset.id = id;
+    btnComprar.dataset.nombre = nombre;
+    btnComprar.dataset.precio = precio;
+    btnComprar.dataset.imagen = imagen;
+    
+    // Obtener la categoría actual
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoria = urlParams.get('categoria');
+    btnComprar.dataset.categoria = categoria;
+    
     // Gestionar el botón de modelo 3D
     const btnModelo3D = document.getElementById('btn-modelo-3d');
     if (ruta && ruta !== 'undefined' && ruta !== '') {
@@ -156,6 +173,96 @@ function cargarDetalleProducto(id, nombre, descripcion, imagen, precio, rating, 
         btnModelo3D.onclick = function() { ejecutarModelo(ruta); };
     } else {
         btnModelo3D.style.display = 'none';
+    }
+}
+
+// Añadir esta función para verificar autenticación
+function verificarAutenticacionCompra() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        return false;
+    }
+    return true;
+}
+
+// Añadir esta función para procesar la compra
+async function procesarCompra(event) {
+    // Añade este código al principio de procesarCompra
+    const token = localStorage.getItem('token');
+    console.log('Token:', token ? token.substring(0, 20) + '...' : 'No token'); // Mostrar solo el inicio para seguridad
+    
+    // Evitar doble clic
+    if (compraEnProceso) return;
+    
+    // Obtener los datos del botón
+    const btn = event.target;
+    const productId = btn.dataset.id;
+    const productName = btn.dataset.nombre;
+    const price = btn.dataset.precio;
+    const productImage = btn.dataset.imagen;
+    const categoria = btn.dataset.categoria;
+    
+    // Verificar si el usuario está autenticado
+    if (!verificarAutenticacionCompra()) {
+        // Mostrar mensaje para iniciar sesión
+        mostrarAlertaTemporal('Debes iniciar sesión para realizar compras', 'warning');
+        // Redirigir a la página de login después de un breve retraso
+        setTimeout(() => {
+            window.location.href = '../login.html?redirect=' + encodeURIComponent(window.location.href);
+        }, 2000);
+        return;
+    }
+    
+    try {
+        compraEnProceso = true;
+        
+        // Cambiar el texto del botón
+        const textoOriginal = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
+        
+        // Obtener token de autenticación
+        const token = localStorage.getItem('token');
+        
+        // Enviar la solicitud al servidor
+        const response = await fetch('http://localhost:5000/api/orders/create', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                productId,
+                productName,
+                price,
+                productImage,
+                categoria,
+                quantity: 1
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Mostrar mensaje de éxito
+            mostrarAlertaTemporal('¡Compra realizada con éxito!', 'success');
+            
+            // Cerrar el modal después de un breve retraso
+            setTimeout(() => {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('productoDetailModal'));
+                modal.hide();
+            }, 1500);
+        } else {
+            throw new Error(data.error || 'Error al procesar la compra');
+        }
+    } catch (error) {
+        console.error('Error en la compra:', error);
+        mostrarAlertaTemporal(`Error: ${error.message}`, 'danger');
+    } finally {
+        // Restablecer el estado del botón
+        btn.disabled = false;
+        btn.innerHTML = 'Comprar';
+        compraEnProceso = false;
     }
 }
 
@@ -171,3 +278,20 @@ function mostrarError(mensaje) {
     `;
     console.error(mensaje);
 }
+
+// En la función de iniciarSesion en auth.js (después de recibir la respuesta)
+
+
+async function testAuth() {
+    const token = localStorage.getItem('token');
+    try {
+        const response = await fetch('http://localhost:5000/api/auth/test', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        console.log('Test de autenticación:', data);
+    } catch (error) {
+        console.error('Error en test:', error);
+    }
+}
+testAuth();
