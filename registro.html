@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodDelivery | Registrarse</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome para íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="Css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="sticky-top shadow-sm">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white py-3">
+            <div class="container">
+                <!-- Logo -->
+                <a class="navbar-brand text-success" href="interfaz.html">
+                    <i class="fas fa-utensils me-2"></i>FoodDelivery
+                </a>
+                
+                <!-- Botón hamburguesa para móviles -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="navbarContent">
+                    <!-- Botones de navegación -->
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="interfaz.html"><i class="fas fa-home me-1"></i> Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#"><i class="fas fa-store me-1"></i> Restaurantes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#"><i class="fas fa-th-large me-1"></i> Categorías</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="login.html"><i class="fas fa-sign-in-alt me-1"></i> Iniciar sesión</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Contenido principal - Formulario de registro -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-7">
+                    <div class="card shadow-sm border-0 rounded-4">
+                        <div class="card-body p-4 p-md-5">
+                            <div class="text-center mb-4">
+                                <i class="fas fa-user-plus text-success fs-1 mb-3"></i>
+                                <h2 class="fw-bold">Crea tu cuenta</h2>
+                                <p class="text-muted">Completa tu información para empezar a pedir</p>
+                            </div>
+                            
+                            <form id="registroForm">
+                                <!-- Datos personales -->
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label for="nombre" class="form-label">Nombre</label>
+                                        <input type="text" class="form-control" id="nombre" placeholder="Tu nombre" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="apellidos" class="form-label">Apellidos</label>
+                                        <input type="text" class="form-control" id="apellidos" placeholder="Tus apellidos" required>
+                                    </div>
+                                </div>
+                                
+                                <!-- Contacto -->
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label for="email" class="form-label">Correo electrónico</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="fas fa-envelope"></i></span>
+                                            <input type="email" class="form-control" id="email" placeholder="nombre@ejemplo.com" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="telefono" class="form-label">Teléfono (opcional)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="fas fa-phone"></i></span>
+                                            <input type="tel" class="form-control" id="telefono" placeholder="+34 XXX XXX XXX">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Contraseñas -->
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label for="password" class="form-label">Contraseña</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="fas fa-lock"></i></span>
+                                            <input type="password" class="form-control" id="password" placeholder="Crea tu contraseña" required 
+                                                   pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$" title="Debe contener al menos 8 caracteres, incluida una mayúscula, una minúscula y un número">
+                                            <button class="btn btn-outline-secondary toggle-password" type="button">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div class="form-text">Mínimo 8 caracteres, con al menos una mayúscula y un número</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="confirmPassword" class="form-label">Confirmar contraseña</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light"><i class="fas fa-lock"></i></span>
+                                            <input type="password" class="form-control" id="confirmPassword" placeholder="Repite tu contraseña" required>
+                                            <button class="btn btn-outline-secondary toggle-password" type="button">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Términos y condiciones -->
+                                <div class="mb-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                                        <label class="form-check-label text-muted small" for="termsCheck">
+                                            He leído y acepto los <a href="#" class="text-success">Términos y Condiciones</a> y la <a href="#" class="text-success">Política de Privacidad</a>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <!-- Botón de registro -->
+                                <button type="submit" class="btn btn-success w-100 py-2 mb-3">
+                                    Crear cuenta
+                                </button>
+                                
+                                <!-- Opciones de registro rápido -->
+                                <div class="position-relative my-4">
+                                    <hr>
+                                    <p class="small text-muted bg-white px-3 position-absolute top-50 start-50 translate-middle">O regístrate con</p>
+                                </div>
+                                
+                                <div class="row g-2 mb-4">
+                                    <div class="col-6">
+                                        <button type="button" class="btn btn-outline-dark w-100">
+                                            <i class="fab fa-google me-2"></i> Google
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button type="button" class="btn btn-outline-dark w-100">
+                                            <i class="fab fa-facebook-f me-2"></i> Facebook
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Enlace para iniciar sesión -->
+                                <p class="text-center text-muted small mb-0">
+                                    ¿Ya tienes una cuenta? <a href="login.html" class="text-success text-decoration-none fw-bold">Inicia sesión</a>
+                                </p>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer simplificado -->
+    <footer class="bg-dark text-white pt-5 pb-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <!-- Logo e info -->
+                <div class="col-md-4 mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-utensils text-success me-2 fs-3"></i>
+                        <h5 class="m-0 text-success fw-bold">FoodDelivery</h5>
+                    </div>
+                    <p class="text-muted small">Lleva tu comida favorita hasta la puerta de tu casa con solo unos clics.</p>
+                    <div class="mt-3">
+                        <a href="#" class="text-decoration-none me-3"><i class="fab fa-facebook-f text-white"></i></a>
+                        <a href="#" class="text-decoration-none me-3"><i class="fab fa-twitter text-white"></i></a>
+                        <a href="#" class="text-decoration-none me-3"><i class="fab fa-instagram text-white"></i></a>
+                    </div>
+                </div>
+    
+                <!-- Enlaces útiles -->
+                <div class="col-md-4 mb-4">
+                    <h6 class="text-uppercase fw-bold mb-3">Enlaces útiles</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Sobre nosotros</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Cómo funciona</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Términos y condiciones</a></li>
+                        <li class="mb-2"><a href="#" class="text-decoration-none text-muted small">Política de privacidad</a></li>
+                    </ul>
+                </div>
+    
+                <!-- Descargar app -->
+                <div class="col-md-4 mb-4">
+                    <h6 class="text-uppercase fw-bold mb-3">Descarga nuestra app</h6>
+                    <div class="mb-3">
+                        <a href="#" class="btn btn-sm btn-outline-light d-inline-flex align-items-center mb-2 me-2">
+                            <i class="fab fa-apple fs-5 me-2"></i>
+                            <div>
+                                <small class="d-block" style="font-size: 0.7rem;">Disponible en</small>
+                                App Store
+                            </div>
+                        </a>
+                        <a href="#" class="btn btn-sm btn-outline-light d-inline-flex align-items-center">
+                            <i class="fab fa-google-play fs-5 me-2"></i>
+                            <div>
+                                <small class="d-block" style="font-size: 0.7rem;">Disponible en</small>
+                                Google Play
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+    
+            <hr class="my-4 bg-secondary">
+    
+            <!-- Línea de copyright y selección de país -->
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start small">
+                    <span class="text-uppercase fw-bold mb-3">&copy; 2025 Alejandro Hernandez. Todos los derechos reservados.</span>
+                </div>
+                <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-globe me-1"></i> España
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item small" href="#">España</a></li>
+                            <li><a class="dropdown-item small" href="#">México</a></li>
+                            <li><a class="dropdown-item small" href="#">Colombia</a></li>
+                            <li><a class="dropdown-item small" href="#">Argentina</a></li>
+                            <li><a class="dropdown-item small" href="#">Chile</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="Js/auth.js"></script>
+    <script>
+        // Verifica si ya hay una sesión
+        document.addEventListener('DOMContentLoaded', function() {
+            // Redireccionar si ya está autenticado
+            verificarAutenticacion(false, 'interfaz.html');
+
+            // Script para mostrar/ocultar contraseña
+            document.querySelectorAll('.toggle-password').forEach(button => {
+                button.addEventListener('click', function() {
+                    const passwordInput = this.previousElementSibling;
+                    const icon = this.querySelector('i');
+                    
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        icon.classList.remove('fa-eye');
+                        icon.classList.add('fa-eye-slash');
+                    } else {
+                        passwordInput.type = 'password';
+                        icon.classList.remove('fa-eye-slash');
+                        icon.classList.add('fa-eye');
+                    }
+                });
+            });
+
+            // Validación y envío del formulario
+            document.getElementById('registroForm').addEventListener('submit', async function(event) {
+                event.preventDefault();
+                
+                const nombre = document.getElementById('nombre').value;
+                const apellidos = document.getElementById('apellidos').value;
+                const email = document.getElementById('email').value;
+                const telefono = document.getElementById('telefono').value;
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                // Validar que las contraseñas coincidan
+                if (password !== confirmPassword) {
+                    mostrarMensaje('Las contraseñas no coinciden');
+                    return;
+                }
+
+                try {
+                    // Mostrar indicador de carga
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    const btnText = submitBtn.innerHTML;
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Registrando...';
+                    
+                    // Enviar datos al servidor
+                    await registrarUsuario({
+                        nombre,
+                        apellidos,
+                        email,
+                        telefono,
+                        password
+                    });
+                    
+                    // Si es exitoso, redirigir a la página principal
+                    window.location.href = 'interfaz.html';
+                    
+                } catch (error) {
+                    // Mostrar mensaje de error
+                    mostrarMensaje(error.message || 'Error al registrar usuario');
+                    
+                    // Restaurar botón
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = btnText;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

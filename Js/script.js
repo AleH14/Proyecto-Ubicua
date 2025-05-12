@@ -39,45 +39,47 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Agregar mensaje del usuario al chat
         addMessage(message, 'user');
-        
-        // Limpiar input
         chatInput.value = '';
         
-        // Mostrar indicador de carga
         const loadingId = showLoading();
         
         try {
-            // Enviar el mensaje a nuestro servidor Flask
+            // Obtener token de autenticación
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                removeLoading(loadingId);
+                addMessage("Por favor, inicia sesión para usar el asistente personalizado", "assistant");
+                return;
+            }
+            
+            // Configura la solicitud con el token en el encabezado
             const response = await fetch('http://localhost:5000/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`  // Asegúrate de incluir "Bearer "
                 },
                 body: JSON.stringify({ message: message })
             });
             
-            // Remover indicador de carga
             removeLoading(loadingId);
             
             if (!response.ok) {
-                throw new Error('Error en la comunicación con el servidor');
+                if (response.status === 401) {
+                    addMessage("Tu sesión ha expirado. Por favor, vuelve a iniciar sesión.", "assistant");
+                } else {
+                    addMessage("Hubo un problema al procesar tu solicitud.", "assistant");
+                }
+                return;
             }
             
             const data = await response.json();
-            
-            if (data.error) {
-                addMessage('Lo siento, ha ocurrido un error. Por favor, inténtalo de nuevo.', 'assistant');
-                console.error(data.error);
-            } else {
-                // Agregar respuesta del asistente
-                addMessage(data.response, 'assistant');
-            }
+            addMessage(data.response, 'assistant');
         } catch (error) {
-            // Remover indicador de carga si ocurre un error
             removeLoading(loadingId);
-            
             console.error('Error:', error);
-            addMessage('Lo siento, ha ocurrido un error de conexión. Por favor, inténtalo más tarde.', 'assistant');
+            addMessage('Lo siento, ha ocurrido un error de conexión.', 'assistant');
         }
     }
     
