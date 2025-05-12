@@ -218,8 +218,13 @@ def chat(current_user):
         # Recuperar el historial de conversación de MongoDB
         conversation_history = get_conversation(user_id)
         
+        # Preparar datos adicionales del usuario (preferencias)
+        user_data = {}
+        if 'preferences_analysis' in current_user:
+            user_data['preferences_analysis'] = current_user['preferences_analysis']
+        
         # Utilizar la función importada de testAI.py con el contexto y el historial
-        response_text = get_ai_response(user_message, user_orders, conversation_history)
+        response_text = get_ai_response(user_message, user_orders, conversation_history, user_data)
         
         # Actualizar el historial de conversación
         conversation_history.append({"role": "user", "content": user_message})
@@ -336,6 +341,91 @@ def get_user_orders(current_user):
         
     except Exception as e:
         return jsonify({'success': False, 'error': f'Error al obtener las órdenes: {str(e)}'}), 500
+
+# Añadir después de las otras rutas de la API
+
+@app.route('/api/conversations/clear', methods=['DELETE'])
+@token_required
+def clear_conversations(current_user):
+    try:
+        user_id = str(current_user['_id'])
+        result = conversations_collection.delete_one({'user_id': user_id})
+        
+        if result.deleted_count > 0:
+            return jsonify({
+                'success': True,
+                'message': 'Historial de conversaciones eliminado correctamente'
+            })
+        else:
+            return jsonify({
+                'success': True,
+                'message': 'No se encontró historial de conversaciones para eliminar'
+            })
+    
+    except Exception as e:
+        print(f"Error al limpiar historial de conversaciones: {str(e)}")
+        return jsonify({
+            'success': False, 
+            'error': f'Error al limpiar el historial de conversaciones: {str(e)}'
+        }), 500
+
+# Añadir después del endpoint para limpiar conversaciones
+
+@app.route('/api/conversations/analyze-preferences', methods=['GET'])
+@token_required
+def analyze_preferences(current_user):
+    try:
+        user_id = str(current_user['_id'])
+        
+        # Recuperar el historial de conversación
+        conversation_history = get_conversation(user_id)
+        
+        if not conversation_history or len(conversation_history) == 0:
+            return jsonify({
+                'success': False,
+                'message': 'No hay suficiente historial de conversación para analizar'
+            }), 400
+        
+        # Obtener el historial de pedidos del usuario para contexto adicional
+        user_orders = list(orders_collection.find({'userId': user_id}).sort('date', -1))
+        
+        # Convertir ObjectId a string para la serialización
+        for order in user_orders:
+            order['_id'] = str(order['_id'])
+            if 'date' in order:
+                order['date'] = str(order['date'])
+        
+        # Crear un mensaje específico para analizar preferencias
+        analyze_message = (
+            "Basándote en todas nuestras conversaciones anteriores y mi historial de pedidos, "
+            "identifica mis preferencias alimenticias. Haz una lista clara con guiones (-) de: "
+            "1. Lo que me gusta comer, 2. Lo que no me gusta, 3. Cualquier restricción alimentaria que detectes. "
+            "Sé específico y conciso. Si no tienes suficiente información para algún punto, indícalo."
+        )
+        
+        # Llamar a la API de OpenAI para analizar preferencias
+        preferences_analysis = get_ai_response(analyze_message, user_orders, conversation_history)
+        
+        # Guardar las preferencias en la colección de usuarios
+        users_collection.update_one(
+            {'_id': ObjectId(user_id)},
+            {'$set': {
+                'preferences_analysis': preferences_analysis,
+                'preferences_updated_at': datetime.datetime.utcnow()
+            }}
+        )
+        
+        return jsonify({
+            'success': True,
+            'preferences': preferences_analysis
+        })
+        
+    except Exception as e:
+        print(f"Error al analizar preferencias: {str(e)}")
+        return jsonify({
+            'success': False, 
+            'error': f'Error al analizar preferencias: {str(e)}'
+        }), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -43,6 +43,12 @@ def get_ai_response(user_message, user_orders=None, conversation_history=None, u
         if user_data and 'location' in user_data:
             context_info += f"\n\nUbicación del usuario: {user_data['location']}"
 
+        # Información de preferencias guardadas del análisis
+        if user_data and 'preferences_analysis' in user_data:
+            context_info += "\n\nPreferencias alimenticias del usuario (Detectadas por análisis):"
+            context_info += f"\n{user_data['preferences_analysis']}"
+            context_info += "\n\nTen muy en cuenta estas preferencias al hacer recomendaciones."
+            
         # Información de preferencias si está disponible
         if user_data and 'preferences' in user_data:
             context_info += "\n\nPreferencias del usuario:"

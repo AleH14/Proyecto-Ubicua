@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil | FoodDelivery</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome para íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="Css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="sticky-top shadow-sm">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white py-3">
+            <div class="container">
+                <!-- Logo -->
+                <a class="navbar-brand text-success" href="interfaz.html">
+                    <i class="fas fa-utensils me-2"></i>FoodDelivery
+                </a>
+                
+                <!-- Botón hamburguesa para móviles -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" >
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="navbarContent">
+                    <!-- Menú de navegación -->
+                    <ul class="navbar-nav ms-auto" id="nav-menu">
+                        <!-- El contenido se cargará dinámicamente -->
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container my-5">
+        <div class="row">
+            <!-- Menú lateral -->
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">Mi cuenta</h5>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="profile.html">
+                                    <i class="fas fa-user me-2"></i> Información personal
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="mis-compras.html">
+                                    <i class="fas fa-shopping-bag me-2"></i> Mis compras
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">
+                                    <i class="fas fa-heart me-2"></i> Favoritos
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" id="logoutBtnSide">
+                                    <i class="fas fa-sign-out-alt me-2"></i> Cerrar sesión
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenido principal -->
+            <div class="col-md-9">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h4 class="fw-bold mb-4">Información personal</h4>
+                        <div id="profile-info">
+                            <!-- La información del perfil se cargará aquí -->
+                            <div class="text-center">
+                                <div class="spinner-border text-success" role="status">
+                                    <span class="visually-hidden">Cargando...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección para preferencias del asistente -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h4 class="fw-bold mb-4">Preferencias del asistente</h4>
+                        <p class="text-muted mb-4">Administra la información y comportamiento del asistente virtual.</p>
+                        
+                        <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                            <div>
+                                <h6 class="mb-1">Historial de conversaciones</h6>
+                                <p class="text-muted small mb-0">Elimina todo el historial de conversaciones con el asistente.</p>
+                            </div>
+                            <button id="clearHistoryBtn" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i> Limpiar historial
+                            </button>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                            <div>
+                                <h6 class="mb-1">¿Qué sabe el asistente de mí?</h6>
+                                <p class="text-muted small mb-0">Analiza tus conversaciones para identificar tus preferencias alimenticias.</p>
+                            </div>
+                            <button id="analyzePreferencesBtn" class="btn btn-primary">
+                                <i class="fas fa-brain me-2"></i> Analizar preferencias
+                            </button>
+                        </div>
+
+                        <!-- Contenedor para mostrar los resultados -->
+                        <div id="preferencesResults" class="mt-4" style="display: none;">
+                            <h6 class="mb-3">Tus preferencias detectadas:</h6>
+                            <div class="card bg-light">
+                                <div class="card-body" id="preferencesContent">
+                                    <div class="text-center">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Analizando...</span>
+                                        </div>
+                                        <p class="mt-2">Analizando tus preferencias...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Otras preferencias pueden ir aquí -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white pt-5 pb-4 mt-5">
+        <!-- El contenido del footer -->
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="Js/auth.js"></script>
+    <script src="Js/profile.js"></script>
+</body>
+</html>
