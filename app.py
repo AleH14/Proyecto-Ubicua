@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, session
 from flask_cors import CORS
 import subprocess
 import os
@@ -6,8 +6,7 @@ import bcrypt
 import jwt
 import datetime
 from pymongo import MongoClient
-from bson.objectid import ObjectId  # Importa esto
-# Importar el módulo testAI
+from bson.objectid import ObjectId 
 from ModelAI.testAI import get_ai_response
 
 app = Flask(__name__)
@@ -20,6 +19,7 @@ try:
     db = client['fooddelivery']
     users_collection = db['users']
     orders_collection = db['orders']
+    conversations_collection = db['conversations']
     print("✅ Colecciones disponibles:", db.list_collection_names())
     print("✅ Conexión a MongoDB establecida")
 except Exception as e:
@@ -174,18 +174,63 @@ def get_profile(current_user):
         'user': user_data
     })
 
+def save_conversation(user_id, conversation_history):
+    """
+    Guarda la conversación de un usuario en la base de datos
+    """
+    conversations_collection.update_one(
+        {'user_id': user_id},
+        {'$set': {
+            'history': conversation_history, 
+            'updated_at': datetime.datetime.utcnow()
+        }},
+        upsert=True
+    )
+
+def get_conversation(user_id):
+    """
+    Recupera el historial de conversación de un usuario
+    """
+    conversation_doc = conversations_collection.find_one({'user_id': user_id})
+    return conversation_doc['history'] if conversation_doc else []
+
 @app.route('/chat', methods=['POST'])
-def chat():
+@token_required
+def chat(current_user):
     try:
-        # Obtén el mensaje del cuerpo de la solicitud
         data = request.get_json()
         user_message = data.get('message', '')
         
         if not user_message:
             return jsonify({"error": "El mensaje está vacío"}), 400
         
-        # Utilizar la función importada de testAI.py
-        response_text = get_ai_response(user_message)
+        user_id = str(current_user['_id'])
+        
+        # Obtener el historial de pedidos del usuario
+        user_orders = list(orders_collection.find({'userId': user_id}).sort('date', -1).limit(10))
+        
+        # Convertir ObjectId a string para la serialización
+        for order in user_orders:
+            order['_id'] = str(order['_id'])
+            if 'date' in order:
+                order['date'] = str(order['date'])
+        
+        # Recuperar el historial de conversación de MongoDB
+        conversation_history = get_conversation(user_id)
+        
+        # Utilizar la función importada de testAI.py con el contexto y el historial
+        response_text = get_ai_response(user_message, user_orders, conversation_history)
+        
+        # Actualizar el historial de conversación
+        conversation_history.append({"role": "user", "content": user_message})
+        conversation_history.append({"role": "assistant", "content": response_text})
+        
+        # Limitar el tamaño del historial para evitar tokens excesivos
+        if len(conversation_history) > 10:
+            conversation_history = conversation_history[-10:]
+            
+        # Guardar la conversación actualizada en MongoDB
+        save_conversation(user_id, conversation_history)
         
         return jsonify({"response": response_text})
     
