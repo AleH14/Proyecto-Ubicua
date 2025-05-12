@@ -10,6 +10,46 @@ api_key = os.getenv("OPENAI_API_KEY")
 # Inicializar cliente de OpenAI
 client = OpenAI(api_key=api_key)
 
+def detect_action_command(message):
+    """Detecta si el mensaje es un comando de acción y devuelve la respuesta adecuada"""
+    
+    # Normalizar el mensaje (minúsculas, sin acentos)
+    msg = message.lower().strip()
+    
+    # Comandos para cerrar sesión
+    logout_commands = ["cierra sesion", "cerrar sesion", "logout", "salir", 
+                      "desconectar", "salir de mi cuenta", "cierra mi sesion"]
+    
+    if any(cmd in msg for cmd in logout_commands):
+        return {
+            "action": "logout",
+            "message": "Cerrando tu sesión..."
+        }
+    
+    # Comandos para navegar a categorías
+    categories = {
+        "pizza": ["pizza", "pizzas", "ver pizzas", "quiero pizza", "muestra las pizzas", "pizzería"],
+        "hamburguesas": ["hamburguesa", "hamburguesas", "ver hamburguesas", "quiero hamburguesa", "muestra las hamburguesas"],
+        "asiatica": ["asiatica", "asiática", "comida asiatica", "comida asiática", "sushi", "ramen", "comida china", "ver comida asiatica"],
+        "saludable": ["saludable", "comida saludable", "comida sana", "ensaladas", "frutas", "verduras", "ver comida saludable"],
+        "postres": ["postres", "golosinas", "dulces", "ver postres", "quiero postre", "muestra los postres"],
+        "pan": ["pan", "panes", "panadería", "ver pan", "quiero pan", "muestra el pan"],
+        "pasteles": ["pasteles", "pastel", "tarta", "tartas", "ver pasteles", "quiero pastel", "muestra los pasteles"],
+        "pollo": ["pollo", "pollos", "ver pollo", "quiero pollo", "muestra el pollo"],
+        "tacos": ["tacos", "taco", "ver tacos", "quiero tacos", "muestra los tacos"]
+    }
+    
+    for category, keywords in categories.items():
+        if any(kw in msg for kw in keywords):
+            return {
+                "action": "navigate",
+                "target": category,
+                "message": f"¡Por supuesto! Te muestro la categoría de {category}..."
+            }
+    
+    # Si no es un comando, devolver None
+    return None
+
 def get_ai_response(user_message, user_orders=None, conversation_history=None, user_data=None):
     """
     Función que envía un mensaje a la API de OpenAI y devuelve la respuesta.
@@ -24,6 +64,12 @@ def get_ai_response(user_message, user_orders=None, conversation_history=None, u
         str: Respuesta generada por el modelo
     """
     try:
+        # Primero verificamos si es un comando de acción
+        action_command = detect_action_command(user_message)
+        if action_command:
+            return action_command
+            
+        # Si no es un comando, continuamos con el comportamiento normal
         # Preparar el mensaje del sistema con información adicional si hay historial
         system_message = "Eres un asistente de FoodDelivery, una app de entrega de comida a domicilio. Sé amable y útil con los usuarios."
         

@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`  // Asegúrate de incluir "Bearer "
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({ message: message })
             });
@@ -75,7 +75,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const data = await response.json();
-            addMessage(data.response, 'assistant');
+            
+            // Comprobar si la respuesta incluye una acción
+            if (data.action) {
+                addMessage(data.response, 'assistant');
+                
+                // Ejecutar la acción después de un breve retardo para que el usuario vea el mensaje
+                setTimeout(() => {
+                    if (data.action === 'logout') {
+                        cerrarSesion(); // La función existente para cerrar sesión
+                    } else if (data.action === 'navigate' && data.target) {
+                        // Navegar a la categoría especificada
+                        window.location.href = `Categorias/categorias.html?categoria=${data.target}`;
+                    }
+                }, 1500);
+            } else {
+                // Respuesta normal
+                addMessage(data.response, 'assistant');
+            }
         } catch (error) {
             removeLoading(loadingId);
             console.error('Error:', error);

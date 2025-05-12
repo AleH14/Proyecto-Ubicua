@@ -224,21 +224,27 @@ def chat(current_user):
             user_data['preferences_analysis'] = current_user['preferences_analysis']
         
         # Utilizar la función importada de testAI.py con el contexto y el historial
-        response_text = get_ai_response(user_message, user_orders, conversation_history, user_data)
+        response = get_ai_response(user_message, user_orders, conversation_history, user_data)
         
-        # Actualizar el historial de conversación
-        conversation_history.append({"role": "user", "content": user_message})
-        conversation_history.append({"role": "assistant", "content": response_text})
-        
-        # Limitar el tamaño del historial para evitar tokens excesivos
-        if len(conversation_history) > 10:
-            conversation_history = conversation_history[-10:]
+        # Comprobar si la respuesta es un comando de acción
+        if isinstance(response, dict) and 'action' in response:
+            # Si es un comando, devolver la acción para que el frontend la procese
+            return jsonify({
+                "response": response["message"],
+                "action": response["action"],
+                "target": response.get("target", None)  # Asegurarse de incluir el target si existe
+            })
+        else:
+            # Si es una respuesta normal, continuar como antes
+            # Actualizar el historial de conversación
+            conversation_history.append({"role": "user", "content": user_message})
+            conversation_history.append({"role": "assistant", "content": response})
             
-        # Guardar la conversación actualizada en MongoDB
-        save_conversation(user_id, conversation_history)
+            # Guardar conversación actualizada
+            save_conversation(user_id, conversation_history)
+            
+            return jsonify({"response": response})
         
-        return jsonify({"response": response_text})
-    
     except Exception as e:
         print(f"Error en /chat: {str(e)}")
         return jsonify({"error": f"Error al procesar la solicitud: {str(e)}"}), 500
