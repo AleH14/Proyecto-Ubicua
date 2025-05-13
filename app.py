@@ -433,5 +433,40 @@ def analyze_preferences(current_user):
             'error': f'Error al analizar preferencias: {str(e)}'
         }), 500
 
+# Añadir después del endpoint analyze_preferences
+
+@app.route('/api/user/clear-preferences', methods=['DELETE'])
+@token_required
+def clear_user_preferences(current_user):
+    try:
+        user_id = str(current_user['_id'])
+        
+        # Actualizar el documento del usuario para eliminar las preferencias
+        result = users_collection.update_one(
+            {'_id': ObjectId(user_id)},
+            {'$unset': {
+                'preferences_analysis': "",
+                'preferences_updated_at': ""
+            }}
+        )
+        
+        if result.modified_count > 0:
+            return jsonify({
+                'success': True,
+                'message': 'Preferencias eliminadas correctamente'
+            })
+        else:
+            return jsonify({
+                'success': True,
+                'message': 'No había preferencias para eliminar'
+            })
+    
+    except Exception as e:
+        print(f"Error al eliminar preferencias: {str(e)}")
+        return jsonify({
+            'success': False, 
+            'error': f'Error al eliminar las preferencias: {str(e)}'
+        }), 500
+
 if __name__ == '__main__':
     app.run(debug=True)

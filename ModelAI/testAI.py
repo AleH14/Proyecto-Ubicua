@@ -26,6 +26,29 @@ def detect_action_command(message):
             "message": "Cerrando tu sesión..."
         }
     
+    # Comandos para ir al perfil
+    profile_commands = ["ver perfil", "mi perfil", "muestra mi perfil", "ir a mi perfil", 
+                       "quiero ver mi perfil", "abre mi perfil", "llévame a mi perfil"]
+    
+    if any(cmd in msg for cmd in profile_commands):
+        return {
+            "action": "navigate_to",
+            "target": "profile",
+            "message": "Te dirijo a tu perfil..."
+        }
+    
+    # Comandos para ver compras
+    orders_commands = ["ver compras", "mis compras", "muestra mis compras", "pedidos", 
+                      "mis pedidos", "historial de compras", "ver mis pedidos", 
+                      "orden", "ordenes", "órdenes"]
+    
+    if any(cmd in msg for cmd in orders_commands):
+        return {
+            "action": "navigate_to",
+            "target": "orders",
+            "message": "Aquí tienes tus compras..."
+        }
+    
     # Comandos para navegar a categorías
     categories = {
         "pizza": ["pizza", "pizzas", "ver pizzas", "quiero pizza", "muestra las pizzas", "pizzería"],

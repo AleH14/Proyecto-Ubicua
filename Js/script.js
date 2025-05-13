@@ -11,6 +11,108 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Estado de la aplicación
     let isListening = false;
+    let isSpeakingEnabled = false;
+    let currentUtterance = null;
+    
+    // Crear botón de síntesis de voz
+    const textToSpeechBtn = document.createElement('button');
+    textToSpeechBtn.className = 'btn btn-sm text-white';
+    textToSpeechBtn.id = 'textToSpeechBtn';
+    textToSpeechBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+    textToSpeechBtn.title = "Escuchar respuestas";
+    
+    // Añadir el botón a la interfaz después del botón de micrófono
+    document.querySelector('.chat-header div').insertBefore(
+        textToSpeechBtn, 
+        closeChatBtn
+    );
+    
+    // Manejar el clic en el botón de síntesis
+    textToSpeechBtn.addEventListener('click', function() {
+        isSpeakingEnabled = !isSpeakingEnabled;
+        textToSpeechBtn.innerHTML = isSpeakingEnabled ? 
+            '<i class="fas fa-volume-up"></i>' : 
+            '<i class="fas fa-volume-mute"></i>';
+        
+        // Si estaba hablando, detener
+        if (currentUtterance) {
+            window.speechSynthesis.cancel();
+            currentUtterance = null;
+        }
+        
+        if (isSpeakingEnabled) {
+            // Informar al usuario que la función está activada
+            addMessage("Síntesis de voz activada. Ahora escucharás mis respuestas.", "assistant");
+        }
+    });
+    
+    // Función para convertir texto a voz
+    function speakText(text) {
+        // Cancelar cualquier síntesis anterior
+        if (window.speechSynthesis.speaking) {
+            window.speechSynthesis.cancel();
+        }
+        
+        // Crear nueva instancia de síntesis
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'es-ES';
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        
+        // Obtener voces disponibles (en español preferiblemente)
+        const voices = window.speechSynthesis.getVoices();
+        const spanishVoice = voices.find(voice => voice.lang.includes('es'));
+        if (spanishVoice) {
+            utterance.voice = spanishVoice;
+        }
+        
+        // Guardar referencia a la utterance actual
+        currentUtterance = utterance;
+        
+        // Limpiar cuando termina
+        utterance.onend = function() {
+            currentUtterance = null;
+        };
+        
+        // Reproducir audio
+        window.speechSynthesis.speak(utterance);
+    }
+    
+    // Asegurarse de que las voces estén cargadas
+    if (window.speechSynthesis) {
+        let voices = [];
+        
+        function populateVoiceList() {
+            voices = window.speechSynthesis.getVoices();
+        }
+        
+        populateVoiceList();
+        
+        if (window.speechSynthesis.onvoiceschanged !== undefined) {
+            window.speechSynthesis.onvoiceschanged = populateVoiceList;
+        }
+    }
+    
+    // Función para agregar mensaje al chat (modificada para incluir síntesis de voz)
+    function addMessage(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', sender);
+        
+        const messageContent = document.createElement('div');
+        messageContent.classList.add('message-content');
+        messageContent.textContent = text;
+        
+        messageDiv.appendChild(messageContent);
+        chatBody.appendChild(messageDiv);
+        
+        // Scroll al final
+        chatBody.scrollTop = chatBody.scrollHeight;
+        
+        // Si es mensaje del asistente y está habilitada la síntesis de voz
+        if (sender === 'assistant' && isSpeakingEnabled && text) {
+            speakText(text);
+        }
+    }
     
     // Función para abrir/cerrar el panel de chat
     assistantBtn.addEventListener('click', function() {
@@ -20,6 +122,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Cerrar chat al hacer clic en el botón de cerrar
     closeChatBtn.addEventListener('click', function() {
         chatPanel.style.display = 'none';
+        
+        // Detener cualquier síntesis en curso al cerrar el chat
+        if (currentUtterance) {
+            window.speechSynthesis.cancel();
+            currentUtterance = null;
+        }
     });
     
     // Enviar mensaje al hacer clic en el botón de enviar
@@ -87,6 +195,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else if (data.action === 'navigate' && data.target) {
                         // Navegar a la categoría especificada
                         window.location.href = `Categorias/categorias.html?categoria=${data.target}`;
+                    } else if (data.action === 'navigate_to') {
+                        // Navegar a páginas específicas del sistema
+                        switch(data.target) {
+                            case 'profile':
+                                window.location.href = 'profile.html';
+                                break;
+                            case 'orders':
+                                window.location.href = 'mis-compras.html';
+                                break;
+                            default:
+                                addMessage('No pude encontrar esa página.', 'assistant');
+                        }
                     }
                 }, 1500);
             } else {
@@ -126,22 +246,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (loadingElement) {
             loadingElement.remove();
         }
-    }
-    
-    // Función para agregar mensaje al chat
-    function addMessage(text, sender) {
-        const messageDiv = document.createElement('div');
-        messageDiv.classList.add('message', sender);
-        
-        const messageContent = document.createElement('div');
-        messageContent.classList.add('message-content');
-        messageContent.textContent = text;
-        
-        messageDiv.appendChild(messageContent);
-        chatBody.appendChild(messageDiv);
-        
-        // Scroll al final
-        chatBody.scrollTop = chatBody.scrollHeight;
     }
     
     // Funcionalidad del botón de voz
@@ -201,12 +305,10 @@ document.addEventListener('DOMContentLoaded', function() {
         voiceToggleBtn.innerHTML = '<i class="fas fa-microphone"></i>';
         assistantBtn.classList.remove('active');
         
-        // Eliminar indicador de escucha
+        // Remover indicador de escucha
         const listeningIndicator = document.getElementById('listeningIndicator');
         if (listeningIndicator) {
             listeningIndicator.remove();
         }
     }
 });
-
-
