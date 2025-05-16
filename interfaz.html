@@ -210,7 +210,9 @@
         <div class="chat-header">
             <h6 class="m-0">Asistente FoodDelivery</h6>
             <div>
-
+                <button class="btn btn-sm text-white" id="speakToggleBtn" title="Activar/desactivar voz">
+                    <i class="fas fa-volume-mute"></i>
+                </button>
                 <button class="btn btn-sm text-white" id="voiceToggleBtn">
                     <i class="fas fa-microphone"></i>
                 </button>
@@ -324,11 +326,18 @@
             </div>
         </div>
     </footer>
+    <!-- Botón de activación directa de voz -->
+<div class="voice-assistant-btn" id="voiceAssistantBtn">
+    <i class="fas fa-microphone"></i>
+</div>
  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Añade esto antes de cerrar el body -->
+
 <script src="Js/script.js"></script>
 <script src="Js/recomendaciones.js"></script>
 <script src="Js/cargarCategorias.js"></script>
 <script src="Js/auth.js"></script>
+<script src="Js/voiceAssisment.js"></script>
 <script>
     // Verificar autenticación al cargar la página
     document.addEventListener('DOMContentLoaded', function() {

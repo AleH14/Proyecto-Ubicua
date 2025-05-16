@@ -8,3 +8,4 @@ ModelAI/__pycache__/
 
 # Archivos de configuración de entorno
 .env
+keySpeechRecognition.json

@@ -13,38 +13,87 @@ document.addEventListener('DOMContentLoaded', function() {
     let isListening = false;
     let isSpeakingEnabled = false;
     let currentUtterance = null;
+    let voicesLoaded = false;
+    let maleSpanishVoice = null;
     
-    // Crear botón de síntesis de voz
-    const textToSpeechBtn = document.createElement('button');
-    textToSpeechBtn.className = 'btn btn-sm text-white';
-    textToSpeechBtn.id = 'textToSpeechBtn';
-    textToSpeechBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
-    textToSpeechBtn.title = "Escuchar respuestas";
-    
-    // Añadir el botón a la interfaz después del botón de micrófono
-    document.querySelector('.chat-header div').insertBefore(
-        textToSpeechBtn, 
-        closeChatBtn
-    );
-    
-    // Manejar el clic en el botón de síntesis
-    textToSpeechBtn.addEventListener('click', function() {
-        isSpeakingEnabled = !isSpeakingEnabled;
-        textToSpeechBtn.innerHTML = isSpeakingEnabled ? 
-            '<i class="fas fa-volume-up"></i>' : 
-            '<i class="fas fa-volume-mute"></i>';
-        
-        // Si estaba hablando, detener
-        if (currentUtterance) {
-            window.speechSynthesis.cancel();
-            currentUtterance = null;
-        }
-        
+    // Referencia al botón de síntesis de voz
+    const speakToggleBtn = document.getElementById('speakToggleBtn');
+
+    // Función para actualizar el estado visual del botón de síntesis
+    function updateSpeakButtonUI() {
         if (isSpeakingEnabled) {
-            // Informar al usuario que la función está activada
-            addMessage("Síntesis de voz activada. Ahora escucharás mis respuestas.", "assistant");
+            speakToggleBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+            speakToggleBtn.setAttribute('title', 'Desactivar voz');
+        } else {
+            speakToggleBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+            speakToggleBtn.setAttribute('title', 'Activar voz');
         }
-    });
+    }
+
+    // Evento para el botón de síntesis de voz
+    if (speakToggleBtn) {
+        speakToggleBtn.addEventListener('click', function() {
+            isSpeakingEnabled = !isSpeakingEnabled;
+            updateSpeakButtonUI();
+            
+            // Guardar preferencia en localStorage
+            localStorage.setItem('speechEnabled', isSpeakingEnabled);
+            
+            // Notificar al usuario del cambio
+            const message = isSpeakingEnabled ? 
+                "Síntesis de voz activada." : 
+                "Síntesis de voz desactivada.";
+            addMessage(message, 'assistant', isSpeakingEnabled);
+        });
+    }
+
+    // Cargar preferencia guardada
+    const savedSpeechPref = localStorage.getItem('speechEnabled');
+    if (savedSpeechPref !== null) {
+        isSpeakingEnabled = savedSpeechPref === 'true';
+        // Actualizaremos la UI después de que se cargue el DOM completamente
+    }
+    
+    // Limpiar el chat 
+    chatBody.innerHTML = '';
+    
+    // Obtener el usuario del localStorage
+    const user = obtenerUsuario();
+    let welcomeMessage = "Hola ¿En qué puedo ayudarte hoy?";
+    
+    // Si hay un usuario logueado, personalizar el mensaje
+    if (user && user.nombre) {
+        welcomeMessage = `¡Bienvenido ${user.nombre}! ¿Qué quieres comer ahora?`;
+    }
+    
+    // Función para inicializar voces y mostrar bienvenida
+    function initializeVoicesAndWelcome() {
+        // Buscar una voz masculina en español
+        const voices = window.speechSynthesis.getVoices();
+        
+        maleSpanishVoice = voices.find(voice => 
+            voice.lang.includes('es') && 
+            (voice.name.includes('Male') || 
+             voice.name.includes('male') ||
+             voice.name.includes('hombre') || 
+             voice.name.includes('Diego') ||
+             voice.name.includes('Carlos') ||
+             voice.name.includes('Miguel') ||
+             voice.name.includes('Juan'))
+        );
+        
+        if (maleSpanishVoice) {
+            console.log("Voz masculina encontrada:", maleSpanishVoice.name);
+        } else {
+            console.log("No se encontró voz masculina en español");
+        }
+        
+        // Marcar como cargadas
+        voicesLoaded = true;
+        
+        // Añadir el mensaje de bienvenida después de cargar las voces
+        addMessage(welcomeMessage, 'assistant', true);
+    }
     
     // Función para convertir texto a voz
     function speakText(text) {
@@ -59,11 +108,19 @@ document.addEventListener('DOMContentLoaded', function() {
         utterance.rate = 1.0;
         utterance.pitch = 1.0;
         
-        // Obtener voces disponibles (en español preferiblemente)
-        const voices = window.speechSynthesis.getVoices();
-        const spanishVoice = voices.find(voice => voice.lang.includes('es'));
-        if (spanishVoice) {
-            utterance.voice = spanishVoice;
+        // Si ya tenemos una voz masculina identificada, usarla
+        if (maleSpanishVoice) {
+            utterance.voice = maleSpanishVoice;
+            console.log("Usando voz masculina:", maleSpanishVoice.name);
+        } 
+        else {
+            // Si no hay voz masculina, buscar cualquier voz en español
+            const voices = window.speechSynthesis.getVoices();
+            const spanishVoice = voices.find(voice => voice.lang.includes('es'));
+            if (spanishVoice) {
+                utterance.voice = spanishVoice;
+                console.log("Usando voz en español:", spanishVoice.name);
+            }
         }
         
         // Guardar referencia a la utterance actual
@@ -80,21 +137,32 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Asegurarse de que las voces estén cargadas
     if (window.speechSynthesis) {
-        let voices = [];
-        
-        function populateVoiceList() {
-            voices = window.speechSynthesis.getVoices();
+        // Checar si las voces ya están disponibles
+        if (window.speechSynthesis.getVoices().length > 0) {
+            initializeVoicesAndWelcome();
         }
         
-        populateVoiceList();
-        
-        if (window.speechSynthesis.onvoiceschanged !== undefined) {
-            window.speechSynthesis.onvoiceschanged = populateVoiceList;
-        }
+        // Esto es necesario para Chrome
+        window.speechSynthesis.onvoiceschanged = function() {
+            if (!voicesLoaded) {
+                initializeVoicesAndWelcome();
+                
+                // Listar voces para depuración
+                const voices = window.speechSynthesis.getVoices();
+                console.log("Voces disponibles:");
+                voices.forEach(voice => {
+                    console.log(`- ${voice.name} (${voice.lang})`);
+                });
+            }
+        };
+    } else {
+        // Si no hay soporte para síntesis de voz, mostrar mensaje normal
+        addMessage(welcomeMessage, 'assistant');
+        console.log("Navegador no soporta síntesis de voz");
     }
     
     // Función para agregar mensaje al chat (modificada para incluir síntesis de voz)
-    function addMessage(text, sender) {
+    function addMessage(text, sender, isWelcome = false) {
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('message', sender);
         
@@ -108,8 +176,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Scroll al final
         chatBody.scrollTop = chatBody.scrollHeight;
         
-        // Si es mensaje del asistente y está habilitada la síntesis de voz
-        if (sender === 'assistant' && isSpeakingEnabled && text) {
+        // Si es mensaje del asistente y está habilitada la síntesis de voz O es mensaje de bienvenida
+        if (sender === 'assistant' && (isSpeakingEnabled || isWelcome) && text) {
             speakText(text);
         }
     }
@@ -310,5 +378,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (listeningIndicator) {
             listeningIndicator.remove();
         }
+    }
+    
+    // Actualizar estado del botón de síntesis al iniciar
+    if (speakToggleBtn) {
+        updateSpeakButtonUI();
     }
 });
