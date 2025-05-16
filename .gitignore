@@ -4,6 +4,8 @@ modelos3D/**/*
 
 # Archivos de caché de Python
 __pycache__/
+ModelAI/__pycache__/
 
 # Archivos de configuración de entorno
 .env
+keySpeechRecognition.json

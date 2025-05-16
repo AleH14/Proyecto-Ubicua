@@ -23,6 +23,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Configurar botón de análisis de preferencias al cargar la página
     document.getElementById('analyzePreferencesBtn').addEventListener('click', analyzePreferences);
+
+    // Configurar botón de borrar preferencias
+    document.getElementById('clearPreferencesBtn').addEventListener('click', clearPreferences);
 });
 
 // Configurar el menú de navegación
@@ -248,5 +251,46 @@ function formatPreferences(preferencesText) {
         return `<ul class="mb-3">${lines.join('')}</ul>`;
     } else {
         return lines.join('');
+    }
+}
+
+// Función para borrar análisis de preferencias
+async function clearPreferences() {
+    if (!confirm('¿Estás seguro de que deseas eliminar tu análisis de preferencias alimenticias?')) {
+        return;
+    }
+    
+    try {
+        // Obtener token de autenticación
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+            alert("Por favor, inicia sesión para usar esta funcionalidad");
+            return;
+        }
+        
+        const response = await fetch('http://localhost:5000/api/user/clear-preferences', {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('Preferencias eliminadas correctamente');
+            
+            // Ocultar resultados si están visibles
+            const preferencesResults = document.getElementById('preferencesResults');
+            if (preferencesResults) {
+                preferencesResults.style.display = 'none';
+            }
+        } else {
+            alert('Error al eliminar las preferencias: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Ha ocurrido un error al intentar borrar las preferencias');
     }
 }
