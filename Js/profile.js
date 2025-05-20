@@ -229,13 +229,31 @@ async function analyzePreferences() {
 
 // Función para formatear el texto de preferencias a HTML
 function formatPreferences(preferencesText) {
+    // Comprobar si preferencesText es undefined o null
+    if (!preferencesText) {
+        return '<p>No se encontraron preferencias.</p>';
+    }
+    
+    // Convertir a string si no lo es
+    let textContent = preferencesText;
+    if (typeof preferencesText !== 'string') {
+        // Si es un objeto, intentar convertirlo a JSON formateado
+        try {
+            textContent = JSON.stringify(preferencesText, null, 2);
+            return `<pre class="bg-light p-3 rounded">${textContent}</pre>`;
+        } catch (e) {
+            // Si falla la conversión a JSON, usar toString
+            textContent = String(preferencesText);
+        }
+    }
+    
     // Si ya viene formateado con HTML, lo devolvemos como está
-    if (preferencesText.includes('<ul>') || preferencesText.includes('<li>')) {
-        return preferencesText;
+    if (textContent.includes('<ul>') || textContent.includes('<li>')) {
+        return textContent;
     }
     
     // Dividir por líneas y formatear
-    const lines = preferencesText.split('\n')
+    const lines = textContent.split('\n')
         .filter(line => line.trim() !== '')
         .map(line => {
             line = line.trim();

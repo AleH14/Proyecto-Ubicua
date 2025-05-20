@@ -73,6 +73,9 @@ async function iniciarSesion(credenciales) {
         // Guardar token en localStorage
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
+        
+        // Añadir bandera de sesión recién iniciada
+        localStorage.setItem('sessionJustStarted', 'true');
 
         return data;
     } catch (error) {
@@ -87,6 +90,9 @@ function cerrarSesion() {
     localStorage.removeItem('user');
     window.location.href = 'login.html';
 }
+
+// Exponer la función cerrarSesion al ámbito global para que pueda ser utilizada por el asistente
+window.cerrarSesion = cerrarSesion;
 
 // Función para verificar si hay sesión activa
 function verificarSesion() {

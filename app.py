@@ -8,9 +8,17 @@ import datetime
 from pymongo import MongoClient
 from bson.objectid import ObjectId 
 from ModelAI.testAI import get_ai_response
+# Importar el módulo de reconocimiento de voz
+from SpeechRecognition.TestSpeechRecognition import record_and_transcribe_audio
 
 app = Flask(__name__)
-CORS(app)  # Habilita CORS para todas las rutas
+CORS(app, resources={
+    r"/*": {
+        "origins": ["http://localhost:5500", "http://127.0.0.1:5500"],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})  # Habilita CORS para todas las rutas
 
 # Configuración MongoDB
 try:
@@ -228,11 +236,21 @@ def chat(current_user):
         
         # Comprobar si la respuesta es un comando de acción
         if isinstance(response, dict) and 'action' in response:
-            # Si es un comando, devolver la acción para que el frontend la procese
+            # Corregir clave inconsistente
+            message = response.get("message", "")
+            
+            # AÑADIR AQUÍ: Actualizar el historial de conversación también para acciones
+            conversation_history.append({"role": "user", "content": user_message})
+            conversation_history.append({"role": "assistant", "content": message})
+            
+            # AÑADIR AQUÍ: Guardar conversación actualizada
+            save_conversation(user_id, conversation_history)
+            
+            # Devolver la acción en el formato correcto
             return jsonify({
-                "response": response["message"],
+                "response": message,
                 "action": response["action"],
-                "target": response.get("target", None)  # Asegurarse de incluir el target si existe
+                "target": response.get("target", None)
             })
         else:
             # Si es una respuesta normal, continuar como antes
@@ -282,6 +300,18 @@ def run_script():
             return jsonify({"message": "Error al ejecutar el script", "error": result.stderr}), 500
     except Exception as e:
         return jsonify({"message": "Error interno del servidor", "error": str(e)}), 500
+
+# Añade este endpoint al final del archivo, justo antes de if __name__ == '__main__':
+
+@app.route('/api/auth/test', methods=['GET'])
+@token_required
+def test_auth(current_user):
+    return jsonify({
+        'success': True,
+        'message': 'Autenticación válida',
+        'user_id': str(current_user['_id']),
+        'nombre': current_user['nombre']
+    })
 
 # Añade esto en app.py junto a las demás rutas
 @app.route('/api/orders/create', methods=['POST'])
@@ -410,7 +440,7 @@ def analyze_preferences(current_user):
         )
         
         # Llamar a la API de OpenAI para analizar preferencias
-        preferences_analysis = get_ai_response(analyze_message, user_orders, conversation_history)
+        preferences_analysis = get_ai_response(analyze_message, user_orders, conversation_history, skip_command_detection=True)
         
         # Guardar las preferencias en la colección de usuarios
         users_collection.update_one(
@@ -466,6 +496,36 @@ def clear_user_preferences(current_user):
         return jsonify({
             'success': False, 
             'error': f'Error al eliminar las preferencias: {str(e)}'
+        }), 500
+
+@app.route('/voice-recognition', methods=['POST'])
+@token_required
+def recognize_voice(current_user):
+    try:
+        print("Iniciando reconocimiento de voz...")
+        
+        # Ejecutar la función de grabación y reconocimiento de voz
+        texto_reconocido = record_and_transcribe_audio()
+        
+        if not texto_reconocido:
+            return jsonify({
+                'success': False,
+                'error': 'No se pudo reconocer ningún texto'
+            }), 400
+        
+        print(f"Texto reconocido: {texto_reconocido}")
+        
+        # Devolver el texto reconocido
+        return jsonify({
+            'success': True,
+            'text': texto_reconocido
+        })
+        
+    except Exception as e:
+        print(f"Error en reconocimiento de voz: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'Error en reconocimiento de voz: {str(e)}'
         }), 500
 
 if __name__ == '__main__':

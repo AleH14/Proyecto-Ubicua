@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="Css/styles.css">
+    <link rel="icon" href="data:,">
 </head>
 <body>
     <!-- Header -->
@@ -210,6 +211,9 @@
         <div class="chat-header">
             <h6 class="m-0">Asistente FoodDelivery</h6>
             <div>
+                <button class="btn btn-sm text-white" id="autoConversationBtn" title="Modo conversación automática">
+                    <i class="fas fa-comments"></i>
+                </button>
                 <button class="btn btn-sm text-white" id="speakToggleBtn" title="Activar/desactivar voz">
                     <i class="fas fa-volume-mute"></i>
                 </button>
@@ -337,7 +341,7 @@
 <script src="Js/recomendaciones.js"></script>
 <script src="Js/cargarCategorias.js"></script>
 <script src="Js/auth.js"></script>
-<script src="Js/voiceAssisment.js"></script>
+<script src="Js/voiceAssistant.js"></script>
 <script>
     // Verificar autenticación al cargar la página
     document.addEventListener('DOMContentLoaded', function() {

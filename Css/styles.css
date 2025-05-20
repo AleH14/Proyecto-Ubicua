@@ -268,3 +268,202 @@
 #speakToggleBtn .fa-volume-mute {
     color: #ffffff; /* Blanco cuando está inactivo */
 }
+/* Estilos adicionales para el botón de voz */
+.voice-assistant-btn {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #28a745;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.voice-assistant-btn:hover {
+    transform: scale(1.1);
+}
+
+.voice-assistant-btn.listening {
+    background-color: #dc3545;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.6);
+    }
+    70% {
+        box-shadow: 0 0 0 15px rgba(220, 53, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+    }
+}
+
+.status-message {
+    background-color: #f8f9fa;
+    border-left: 3px solid #17a2b8;
+    font-style: italic;
+}
+
+/* Indicador de escucha */
+.listening-indicator {
+    background-color: rgba(40, 167, 69, 0.1);
+    border-left: 3px solid #28a745;
+    padding: 8px 12px;
+    margin: 8px 0;
+    border-radius: 0 16px 16px 0;
+    font-style: italic;
+    color: #28a745;
+    animation: pulse-text 1.5s infinite;
+}
+
+.listening-indicator span {
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #28a745;
+    margin-left: 3px;
+    animation: listening-dots 1.4s infinite;
+    vertical-align: middle;
+}
+
+.listening-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.listening-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes listening-dots {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+    100% { transform: translateY(0); }
+}
+
+@keyframes pulse-text {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+/* Estilos mejorados para el botón de voz */
+.voice-assistant-btn {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #28a745;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.voice-assistant-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+}
+
+/* Estado de escucha activa */
+.voice-assistant-btn.listening {
+    background-color: #dc3545;
+    animation: pulse-listening 1.5s infinite;
+}
+
+/* Efectos de animación para estado de escucha */
+@keyframes pulse-listening {
+    0% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 15px rgba(220, 53, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+    }
+}
+
+/* Cambio en el icono cuando está escuchando */
+.voice-assistant-btn.listening .fa-microphone {
+    animation: mic-wave 1s ease-in-out infinite alternate;
+}
+
+@keyframes mic-wave {
+    0% {
+        transform: scaleY(0.8);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scaleY(1.2);
+        opacity: 1;
+    }
+}
+
+/* Animación al procesar la voz */
+.voice-assistant-btn .fa-circle-notch {
+    font-size: 24px;
+}
+/* Estilos para el botón de conversación automática */
+#autoConversationBtn .fa-comments {
+    color: #ffffff; /* Color cuando está desactivado */
+}
+
+#autoConversationBtn.active .fa-comments {
+    color: #28a745; /* Verde cuando está activo */
+}
+
+/* Badge para mostrar que el modo conversación está activo */
+#autoConversationBtn.active::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #28a745;
+}
+
+/* Tooltip personalizado */
+.tooltip-auto-conversation {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip-auto-conversation .tooltiptext {
+    visibility: hidden;
+    width: 200px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltip-auto-conversation:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
