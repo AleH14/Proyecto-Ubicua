@@ -239,9 +239,16 @@ def chat(current_user):
             # Corregir clave inconsistente
             message = response.get("message", "")
             
+            # AÑADIR AQUÍ: Actualizar el historial de conversación también para acciones
+            conversation_history.append({"role": "user", "content": user_message})
+            conversation_history.append({"role": "assistant", "content": message})
+            
+            # AÑADIR AQUÍ: Guardar conversación actualizada
+            save_conversation(user_id, conversation_history)
+            
             # Devolver la acción en el formato correcto
             return jsonify({
-                "response": message,  # Asegurarse de que se usa la clave correcta
+                "response": message,
                 "action": response["action"],
                 "target": response.get("target", None)
             })
@@ -433,7 +440,7 @@ def analyze_preferences(current_user):
         )
         
         # Llamar a la API de OpenAI para analizar preferencias
-        preferences_analysis = get_ai_response(analyze_message, user_orders, conversation_history)
+        preferences_analysis = get_ai_response(analyze_message, user_orders, conversation_history, skip_command_detection=True)
         
         # Guardar las preferencias en la colección de usuarios
         users_collection.update_one(

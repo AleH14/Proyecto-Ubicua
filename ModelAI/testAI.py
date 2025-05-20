@@ -21,6 +21,18 @@ def detect_action_command(message):
     # Registra el mensaje normalizado para depuración
     print(f"Mensaje normalizado para detección de comandos: '{msg}'")
     
+    # NUEVO: Excluir expresiones de preferencia
+    preference_patterns = [
+        "me gusta", "prefiero", "me encanta", "amo", "adoro", 
+        "soy fan de", "me fascina", "disfruto", "me agrada",
+        "favorite", "favorito", "favorita"
+    ]
+    
+    # Si el mensaje contiene patrones de preferencia, NO lo consideres un comando
+    if any(pattern in msg for pattern in preference_patterns):
+        print("Detectada expresión de preferencia, ignorando como comando")
+        return None
+    
     # Versión más flexible de la detección de comandos
     # Comandos para cerrar sesión
     logout_commands = ["cierra sesion", "cerrar sesion", "logout", "salir", 
@@ -69,6 +81,19 @@ def detect_action_command(message):
         "tacos": ["tacos", "taco", "ver tacos", "quiero tacos", "muestra los tacos"]
     }
     
+    # NUEVO: Palabras que indican intención de navegación
+    navigation_indicators = [
+        "ver ", "muestra", "muestrame", "enseñame", "llevame a", "ir a",
+        "navega a", "abre", "busca", "quiero ver", "quiero comprar",
+        "comprar", "ordenar", "pedir", "menu de", "categoria", "categoría"
+    ]
+    
+    # Primero verificar si hay una intención clara de navegación
+    if not any(indicator in msg for indicator in navigation_indicators):
+        # Si no hay palabra clave de navegación, ignorar coincidencias de categoría
+        return None
+    
+    # Solo si hay intención de navegación, buscar la categoría específica
     for category, keywords in categories.items():
         if any(kw in msg for kw in keywords):
             return {
@@ -80,7 +105,7 @@ def detect_action_command(message):
     # Si no es un comando, devolver None
     return None
 
-def get_ai_response(user_message, user_orders=None, conversation_history=None, user_data=None):
+def get_ai_response(user_message, user_orders=None, conversation_history=None, user_data=None, skip_command_detection=False):
     """
     Función que envía un mensaje a la API de OpenAI y devuelve la respuesta.
     
@@ -89,15 +114,17 @@ def get_ai_response(user_message, user_orders=None, conversation_history=None, u
         user_orders (list, optional): Historial de pedidos del usuario
         conversation_history (list, optional): Historial de mensajes anteriores
         user_data (dict, optional): Información adicional del usuario
+        skip_command_detection (bool, optional): Si es True, omite la detección de comandos
         
     Returns:
         str: Respuesta generada por el modelo
     """
     try:
-        # Primero verificamos si es un comando de acción
-        action_command = detect_action_command(user_message)
-        if action_command:
-            return action_command
+        # Primero verificamos si es un comando de acción (solo si no estamos saltando la detección)
+        if not skip_command_detection:
+            action_command = detect_action_command(user_message)
+            if action_command:
+                return action_command
             
         # Si no es un comando, continuamos con el comportamiento normal
         # Preparar el mensaje del sistema con información adicional si hay historial
