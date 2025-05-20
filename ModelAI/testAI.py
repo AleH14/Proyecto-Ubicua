@@ -2,6 +2,7 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 from datetime import datetime
+import unicodedata
 
 # Cargar variables de entorno
 load_dotenv() 
@@ -13,14 +14,20 @@ client = OpenAI(api_key=api_key)
 def detect_action_command(message):
     """Detecta si el mensaje es un comando de acción y devuelve la respuesta adecuada"""
     
-    # Normalizar el mensaje (minúsculas, sin acentos)
-    msg = message.lower().strip()
+    # Normalizar aún más el mensaje (quitar acentos, etc.)
+    msg = unicodedata.normalize('NFKD', message.lower().strip())
+    msg = ''.join([c for c in msg if not unicodedata.combining(c)])
     
+    # Registra el mensaje normalizado para depuración
+    print(f"Mensaje normalizado para detección de comandos: '{msg}'")
+    
+    # Versión más flexible de la detección de comandos
     # Comandos para cerrar sesión
     logout_commands = ["cierra sesion", "cerrar sesion", "logout", "salir", 
                       "desconectar", "salir de mi cuenta", "cierra mi sesion"]
     
     if any(cmd in msg for cmd in logout_commands):
+        print("🔑 Comando de cierre de sesión detectado")
         return {
             "action": "logout",
             "message": "Cerrando tu sesión..."

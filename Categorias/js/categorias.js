@@ -284,14 +284,39 @@ function mostrarError(mensaje) {
 
 async function testAuth() {
     const token = localStorage.getItem('token');
+    
     try {
+        // Comprobar si hay token antes de intentar la autenticación
+        if (!token) {
+            console.log('No hay token de autenticación');
+            return;
+        }
+        
+        // Usar URL directa en lugar del proxy (solo para pruebas)
         const response = await fetch('http://localhost:5000/api/auth/test', {
-            headers: { 'Authorization': `Bearer ${token}` }
+            method: 'GET',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            // Añadir modo de cors para gestionar los errores de forma más clara
+            mode: 'cors'
         });
+        
         const data = await response.json();
         console.log('Test de autenticación:', data);
     } catch (error) {
-        console.error('Error en test:', error);
+        console.error('Error en test de autenticación:', error.message);
+        
+        // Mostrar mensaje de error más descriptivo
+        if (error.message.includes('Failed to fetch')) {
+            console.error('Error de conexión: verifica que el servidor esté funcionando en localhost:5000');
+        }
     }
 }
-testAuth();
+
+// Solo ejecutar el test si hay un token
+const token = localStorage.getItem('token');
+if (token) {
+    testAuth();
+}
