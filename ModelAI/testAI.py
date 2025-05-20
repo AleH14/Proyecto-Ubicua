@@ -128,7 +128,7 @@ def get_ai_response(user_message, user_orders=None, conversation_history=None, u
             
         # Si no es un comando, continuamos con el comportamiento normal
         # Preparar el mensaje del sistema con información adicional si hay historial
-        system_message = "Eres un asistente de FoodDelivery, una app de entrega de comida a domicilio. Sé amable y útil con los usuarios."
+        system_message = "Eres un asistente de FoodDelivery, una app de entrega de comida a domicilio. Sé amable y útil con los usuarios limita tus respuestas ha cosas de comida y de la aplicacion FoodDelivery."
         
         # Si tenemos historial de pedidos, lo añadimos al contexto
         if user_orders and len(user_orders) > 0:
