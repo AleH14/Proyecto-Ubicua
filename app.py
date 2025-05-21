@@ -10,6 +10,11 @@ from bson.objectid import ObjectId
 from ModelAI.testAI import get_ai_response
 # Importar el módulo de reconocimiento de voz
 from SpeechRecognition.TestSpeechRecognition import record_and_transcribe_audio
+import base64
+import tempfile
+from FaceRecognition.faceRecognition import obtener_token
+# Importar el módulo faceAnalizer con las funciones necesarias
+from FaceRecognition.faceAnalizer import verify_face, get_face_embedding
 
 app = Flask(__name__)
 CORS(app, resources={
@@ -83,6 +88,8 @@ def token_required(f):
 def register():
     data = request.get_json()
     
+    print(f"Datos recibidos para registro: {data.keys()}")
+    
     # Validar datos requeridos
     required_fields = ['nombre', 'apellidos', 'email', 'password']
     for field in required_fields:
@@ -106,10 +113,19 @@ def register():
         'fecha_registro': datetime.datetime.utcnow()
     }
     
+    # Añadir el token facial si está presente
+    if 'faceToken' in data and data['faceToken']:
+        print(f"Token facial recibido para usuario {data['email']}")
+        new_user['faceToken'] = data['faceToken']
+    else:
+        print(f"No se recibió token facial para usuario {data['email']}")
+    
     # Insertar en la base de datos
     try:
         result = users_collection.insert_one(new_user)
         user_id = str(result.inserted_id)
+        
+        print(f"Usuario registrado con ID: {user_id}, Campos: {new_user.keys()}")
         
         # Generar token JWT
         token = generate_token(user_id)
@@ -129,6 +145,7 @@ def register():
         }), 201
         
     except Exception as e:
+        print(f"Error al registrar usuario: {str(e)}")
         return jsonify({'success': False, 'error': f'Error al registrar usuario: {str(e)}'}), 500
 
 # Ruta para el inicio de sesión
@@ -527,6 +544,172 @@ def recognize_voice(current_user):
             'success': False,
             'error': f'Error en reconocimiento de voz: {str(e)}'
         }), 500
+
+@app.route('/api/face/process', methods=['POST'])
+def process_face_image():
+    try:
+        data = request.get_json()
+        
+        if 'image' not in data:
+            return jsonify({
+                'success': False,
+                'error': 'No se proporcionó ninguna imagen'
+            }), 400
+            
+        # Obtener la imagen en base64 y eliminar el prefijo (ej: data:image/jpeg;base64,)
+        base64_data = data['image']
+        if ',' in base64_data:
+            base64_data = base64_data.split(',', 1)[1]
+            
+        # Decodificar la imagen
+        image_data = base64.b64decode(base64_data)
+        
+        # Guardar temporalmente la imagen
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_file:
+            temp_file_path = temp_file.name
+            temp_file.write(image_data)
+        
+        try:
+            # Procesar la imagen con faceRecognition
+            face_token = obtener_token(temp_file_path)
+            
+            if face_token is None:
+                return jsonify({
+                    'success': False,
+                    'error': 'No se pudo detectar un rostro claro en la imagen'
+                }), 400
+                
+            # Devolver el token facial
+            return jsonify({
+                'success': True,
+                'faceToken': face_token
+            })
+            
+        finally:
+            # Limpiar el archivo temporal
+            if os.path.exists(temp_file_path):
+                os.unlink(temp_file_path)
+                
+    except Exception as e:
+        print(f"Error al procesar imagen facial: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'Error al procesar la imagen: {str(e)}'
+        }), 500
+
+# Añadir este nuevo endpoint después de login
+@app.route('/api/auth/face-login', methods=['POST'])
+def face_login():
+    try:
+        data = request.get_json()
+        
+        if 'image' not in data:
+            return jsonify({
+                'success': False,
+                'error': 'No se proporcionó ninguna imagen'
+            }), 400
+            
+        # Obtener la imagen en base64 y eliminar el prefijo
+        base64_data = data['image']
+        if ',' in base64_data:
+            base64_data = base64_data.split(',', 1)[1]
+            
+        # Decodificar la imagen
+        image_data = base64.b64decode(base64_data)
+        
+        # Guardar temporalmente la imagen
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_file:
+            temp_file_path = temp_file.name
+            temp_file.write(image_data)
+            
+        try:
+            # Buscar todos los usuarios que tengan token facial
+            users_with_face = list(users_collection.find({'faceToken': {'$exists': True}}))
+            
+            if not users_with_face:
+                print("No hay usuarios registrados con Face ID")
+                return jsonify({
+                    'success': False,
+                    'error': 'No hay usuarios registrados con Face ID'
+                }), 404
+                
+            print(f"Encontrados {len(users_with_face)} usuarios con token facial")
+                
+            # Procesar la imagen para verificar si hay rostros
+            result = get_face_embedding(temp_file_path)
+            
+            if "error" in result and "No se detectaron rostros" in result["error"]:
+                print("No se detectaron rostros en la imagen enviada")
+                return jsonify({
+                    'success': False,
+                    'error': 'No se detectaron rostros en la imagen'
+                }), 400
+                
+            # Para cada usuario, verificar si coincide con la imagen
+            best_match = None
+            best_similarity = 0
+            threshold = 0.4  # Umbral para considerar coincidencia
+            
+            for user in users_with_face:
+                # Verificar identidad usando faceAnalizer
+                result = verify_face(temp_file_path, user['faceToken'], threshold)
+                
+                if "error" in result:
+                    print(f"Error al verificar usuario {user['email']}: {result['error']}")
+                    continue
+                    
+                similarity = result.get('similarity', 0)
+                print(f"Usuario {user['email']} - Similitud: {similarity:.4f}")
+                
+                if result.get('match', False) and similarity > best_similarity:
+                    best_match = user
+                    best_similarity = similarity
+            
+            # Si encontramos una coincidencia
+            if best_match:
+                # Generar token JWT
+                token = generate_token(str(best_match['_id']))
+                
+                # Datos del usuario para respuesta (sin contraseña ni token facial)
+                user_data = {
+                    'id': str(best_match['_id']),
+                    'nombre': best_match['nombre'],
+                    'apellidos': best_match['apellidos'],
+                    'email': best_match['email'],
+                    'similarity': best_similarity
+                }
+                
+                print(f"¡Coincidencia! Usuario: {best_match['email']} - Similitud: {best_similarity:.4f}")
+                
+                return jsonify({
+                    'success': True,
+                    'token': token,
+                    'user': user_data
+                })
+            else:
+                print("No se encontraron coincidencias")
+                return jsonify({
+                    'success': False,
+                    'error': 'No se pudo verificar la identidad'
+                }), 401
+                
+        finally:
+            # Limpiar archivo temporal
+            if os.path.exists(temp_file_path):
+                os.unlink(temp_file_path)
+                
+    except Exception as e:
+        print(f"Error en autenticación facial: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'Error en autenticación facial: {str(e)}'
+        }), 500
+
+# Si hubiera algún problema con la función verify_face, podríamos implementarla directamente
+def verify_face_direct(image_path, encrypted_embedding_str, threshold=0.4):
+    """Implementación directa por si hay problemas con el import"""
+    from FaceRecognition.faceAnalizer import verify_face as original_verify_face
+    return original_verify_face(image_path, encrypted_embedding_str, threshold)
 
 if __name__ == '__main__':
     app.run(debug=True)

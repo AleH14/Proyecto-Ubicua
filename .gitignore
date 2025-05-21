@@ -8,4 +8,7 @@ ModelAI/__pycache__/
 
 # Archivos de configuración de entorno
 .env
+#No guardo el archivo de key de Google para Speech Recognnition 
 keySpeechRecognition.json
+# no guardo los archivos que contienen los pesos
+FaceRecognition/dnns/

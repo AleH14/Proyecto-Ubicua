@@ -41,9 +41,6 @@
                         <li class="nav-item">
                             <a class="nav-link" href="registro.html"><i class="fas fa-user-plus me-1"></i> Registrarse</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="registro.html"><i class="fas fa-user-plus me-1"></i> Registrarse</a>
-                        </li>
                     </ul>
                 </div>
             </div>
@@ -106,16 +103,21 @@
                                     <hr>
                                     <p class="small text-muted bg-white px-3 position-absolute top-50 start-50 translate-middle">O continúa con</p>
                                 </div>
-                                
+
                                 <div class="row g-2 mb-4">
-                                    <div class="col-6">
+                                    <div class="col-4">
                                         <button type="button" class="btn btn-outline-dark w-100">
                                             <i class="fab fa-google me-2"></i> Google
                                         </button>
                                     </div>
-                                    <div class="col-6">
+                                    <div class="col-4">
                                         <button type="button" class="btn btn-outline-dark w-100">
                                             <i class="fab fa-facebook-f me-2"></i> Facebook
+                                        </button>
+                                    </div>
+                                    <div class="col-4">
+                                        <button type="button" id="faceIdLoginBtn" class="btn btn-outline-dark w-100" data-bs-toggle="modal" data-bs-target="#faceIdModal">
+                                            <i class="fas fa-face-viewfinder me-2"></i> Face ID
                                         </button>
                                     </div>
                                 </div>
@@ -131,6 +133,73 @@
             </div>
         </div>
     </section>
+
+    <!-- Modal para Face ID -->
+    <div class="modal fade" id="faceIdModal" tabindex="-1" aria-labelledby="faceIdModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="faceIdModalLabel">Autenticación con Face ID</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <!-- Área de Face ID -->
+                    <div id="faceIdAuthArea">
+                        <!-- Estado inicial -->
+                        <div id="faceIdInitial">
+                            <div class="py-4">
+                                <i class="fas fa-face-viewfinder text-success fa-4x mb-3"></i>
+                                <h5>Preparando autenticación facial</h5>
+                                <p class="text-muted">Vamos a analizar tu rostro para iniciar sesión</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Escaneando -->
+                        <div id="faceIdScanning" class="d-none">
+                            <div class="py-4">
+                                <div class="scanner-animation mb-3">
+                                    <i class="fas fa-face-viewfinder text-success fa-4x"></i>
+                                    <div class="scanner-line"></div>
+                                </div>
+                                <h5>Analizando tu rostro</h5>
+                                <p class="text-muted">Por favor, mantente quieto por un momento...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Éxito -->
+                        <div id="faceIdSuccess" class="d-none">
+                            <div class="py-4">
+                                <i class="fas fa-check-circle text-success fa-4x mb-3"></i>
+                                <h5>¡Identidad verificada!</h5>
+                                <p class="text-muted">Iniciando sesión automáticamente...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Error -->
+                        <div id="faceIdError" class="d-none">
+                            <div class="py-4">
+                                <i class="fas fa-times-circle text-danger fa-4x mb-3"></i>
+                                <h5>Verificación fallida</h5>
+                                <p class="text-muted">No pudimos verificar tu identidad. Por favor, inténtalo nuevamente o usa email y contraseña.</p>
+                                <div class="alert alert-warning mt-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <span>Si es tu primer acceso, necesitas registrarte y configurar tu Face ID antes de usar esta función.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cámara oculta para captura (no se muestra al usuario) -->
+                        <video id="faceIdCamera" class="d-none" autoplay playsinline></video>
+                        <canvas id="faceIdCanvas" class="d-none"></canvas>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" id="retryFaceIdBtn" class="btn btn-primary d-none">Intentar nuevamente</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer simplificado -->
     <footer class="bg-dark text-white pt-5 pb-4 mt-5">
@@ -263,7 +332,61 @@
                     submitBtn.innerHTML = btnText;
                 }
             });
+            
+            // Manejar botón de Face ID (solo para mantener funcionalidad en caso de que el usuario quiera activar manualmente)
+            document.getElementById('faceIdLoginBtn').addEventListener('click', function() {
+                // No hacemos nada especial aquí porque el modal ya tiene el atributo data-bs-toggle
+            });
+            
+            document.getElementById('retryFaceIdBtn').addEventListener('click', function() {
+                // Volver a intentar reconocimiento facial
+                document.getElementById('faceIdError').classList.add('d-none');
+                document.getElementById('faceIdScanning').classList.remove('d-none');
+                document.getElementById('retryFaceIdBtn').classList.add('d-none');
+                autenticarConFaceId();
+            });
+            
+            // Iniciar reconocimiento facial automáticamente
+            setTimeout(() => {
+                // Mostrar modal
+                const faceIdModal = new bootstrap.Modal(document.getElementById('faceIdModal'));
+                faceIdModal.show();
+                
+                // Preparar UI
+                document.getElementById('faceIdInitial').classList.remove('d-none');
+                document.getElementById('faceIdScanning').classList.add('d-none');
+                document.getElementById('faceIdSuccess').classList.add('d-none');
+                document.getElementById('faceIdError').classList.add('d-none');
+                
+                // Iniciar proceso después de un breve retraso para que el usuario vea lo que está pasando
+                setTimeout(() => {
+                    document.getElementById('faceIdInitial').classList.add('d-none');
+                    document.getElementById('faceIdScanning').classList.remove('d-none');
+                    autenticarConFaceId();
+                }, 1000);
+            }, 500); // Pequeño retraso para asegurar que la página ya está cargada
         });
     </script>
+
+    <style>
+        .scanner-animation {
+            position: relative;
+            display: inline-block;
+        }
+        .scanner-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background-color: #198754;
+            animation: scanning 1.5s ease-in-out infinite;
+        }
+        @keyframes scanning {
+            0% { top: 0; }
+            50% { top: 100%; }  
+            100% { top: 0; }
+        }
+    </style>
 </body>
 </html>
