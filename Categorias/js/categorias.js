@@ -247,6 +247,9 @@ async function procesarCompra(event) {
             // Mostrar mensaje de éxito
             mostrarAlertaTemporal('¡Compra realizada con éxito!', 'success');
             
+            // NUEVO: Marcar que necesitamos actualizar recomendaciones
+            localStorage.setItem('needsRecommendationRefresh', 'true');
+            
             // Cerrar el modal después de un breve retraso
             setTimeout(() => {
                 const modal = bootstrap.Modal.getInstance(document.getElementById('productoDetailModal'));
@@ -320,3 +323,4 @@ const token = localStorage.getItem('token');
 if (token) {
     testAuth();
 }
+
