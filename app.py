@@ -15,6 +15,7 @@ import tempfile
 from FaceRecognition.faceRecognition import obtener_token
 # Importar el módulo faceAnalizer con las funciones necesarias
 from FaceRecognition.faceAnalizer import verify_face, get_face_embedding
+import cv2  # Importar OpenCV
 
 app = Flask(__name__)
 CORS(app, resources={
@@ -800,6 +801,82 @@ def get_recommendations(current_user):
         return jsonify({
             'success': False,
             'error': f'Error al obtener recomendaciones: {str(e)}'
+        }), 500
+
+# Añadir este nuevo endpoint después del endpoint /api/face/process
+
+@app.route('/api/face/count', methods=['POST'])
+def count_faces_in_image():
+    try:
+        data = request.get_json()
+        
+        if 'image' not in data:
+            return jsonify({
+                'success': False,
+                'error': 'No se proporcionó ninguna imagen'
+            }), 400
+            
+        # Obtener la imagen en base64 y eliminar el prefijo (ej: data:image/jpeg;base64,)
+        base64_data = data['image']
+        if ',' in base64_data:
+            base64_data = base64_data.split(',', 1)[1]
+            
+        # Decodificar la imagen
+        image_data = base64.b64decode(base64_data)
+        
+        # Guardar temporalmente la imagen
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_file:
+            temp_file_path = temp_file.name
+            temp_file.write(image_data)
+        
+        try:
+            # Usar OpenCV para detectar rostros
+            img = cv2.imread(temp_file_path)
+            if img is None:
+                return jsonify({
+                    'success': False,
+                    'error': 'No se pudo cargar la imagen'
+                }), 400
+                
+            # Crear y configurar el detector de rostros
+            detector = cv2.FaceDetectorYN.create(
+                "FaceRecognition/dnns/face_detection_yunet_2023mar.onnx", 
+                "", 
+                (img.shape[1], img.shape[0])
+            )
+            
+            # Realizar la detección
+            _, faces = detector.detect(img)
+            
+            if faces is None:
+                face_count = 0
+                message = "No se detectaron rostros en la imagen"
+            else:
+                face_count = len(faces)
+                
+                if face_count == 0:
+                    message = "No se detectaron rostros en la imagen"
+                elif face_count == 1:
+                    message = "Se detectó un rostro correctamente"
+                else:
+                    message = f"Se detectaron {face_count} rostros en la imagen"
+                    
+            return jsonify({
+                'success': True,
+                'faceCount': face_count,
+                'message': message
+            })
+            
+        finally:
+            # Limpiar el archivo temporal
+            if os.path.exists(temp_file_path):
+                os.unlink(temp_file_path)
+                
+    except Exception as e:
+        print(f"Error al contar rostros en la imagen: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'Error al procesar la imagen: {str(e)}'
         }), 500
 
 if __name__ == '__main__':
