@@ -711,5 +711,96 @@ def verify_face_direct(image_path, encrypted_embedding_str, threshold=0.4):
     from FaceRecognition.faceAnalizer import verify_face as original_verify_face
     return original_verify_face(image_path, encrypted_embedding_str, threshold)
 
+# Añadir después de las otras rutas de la API
+
+@app.route('/api/recommendations', methods=['GET'])
+@token_required
+def get_recommendations(current_user):
+    try:
+        # Importar módulos necesarios al inicio de la función
+        import os
+        import json
+        
+        user_id = str(current_user['_id'])
+        
+        # Definir current_dir para resolver la ruta correctamente
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        # Obtener los pedidos del usuario
+        user_orders = list(orders_collection.find({'userId': user_id}))
+        
+        # Si no hay pedidos, devolver categorías populares generales
+        if not user_orders:
+            return jsonify({
+                'success': True,
+                'recommendations': [],
+                'hasOrders': False
+            })
+        
+        # Analizar las categorías más frecuentes
+        categories_count = {}
+        for order in user_orders:
+            category = order.get('categoria', 'sin-categoria')
+            categories_count[category] = categories_count.get(category, 0) + 1
+        
+        # Ordenar las categorías por frecuencia
+        sorted_categories = sorted(categories_count.items(), key=lambda x: x[1], reverse=True)
+        top_categories = [cat[0] for cat in sorted_categories if cat[0] != 'sin-categoria'][:3]
+        
+        # Si no hay suficientes categorías, añadir algunas predeterminadas
+        while len(top_categories) < 3:
+            default_categories = ['pizza', 'hamburguesas', 'postres', 'bebidas', 'saludable']
+            for cat in default_categories:
+                if cat not in top_categories:
+                    top_categories.append(cat)
+                    if len(top_categories) >= 3:
+                        break
+        
+        # Cargar datos de categorías desde el archivo JSON correcto
+        json_path = os.path.join(current_dir, 'JSONcategorias', 'categoriasInterfaz.json')
+        
+        print(f"Intentando abrir: {json_path}")
+        
+        recommendations = []
+        
+        if os.path.exists(json_path):
+            try:
+                with open(json_path, 'r', encoding='utf-8') as file:
+                    categorias_data = json.load(file)
+                
+                # Obtener todas las categorías disponibles
+                all_categories = categorias_data.get('categorias', [])
+                
+                # Filtrar las categorías que coinciden con las top_categories
+                for categoria in all_categories:
+                    if categoria['id'] in top_categories:
+                        recommendations.append({
+                            'id': categoria.get('id', ''),
+                            'nombre': categoria.get('nombre', ''),
+                            'imagen': categoria.get('imagen', ''),
+                            'categoria': categoria.get('id', ''),
+                            'precio': 'Ver opciones'  # Texto genérico ya que no hay precio en categoriasInterfaz.json
+                        })
+                        
+                        if len(recommendations) >= 6:  # Limitamos a 6 recomendaciones
+                            break
+            except Exception as e:
+                print(f"Error al procesar el archivo JSON: {str(e)}")
+        else:
+            print(f"No se encontró el archivo en la ruta: {json_path}")
+        
+        return jsonify({
+            'success': True,
+            'recommendations': recommendations,
+            'hasOrders': len(user_orders) > 0
+        })
+        
+    except Exception as e:
+        print(f"Error al obtener recomendaciones: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'Error al obtener recomendaciones: {str(e)}'
+        }), 500
+
 if __name__ == '__main__':
     app.run(debug=True)
