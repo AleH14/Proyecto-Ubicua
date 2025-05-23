@@ -1,4 +1,7 @@
-// Funcionalidad del asistente virtual (chat y voz)
+// Exponer el mensaje de bienvenida al scope global (añadir hacia el inicio del archivo)
+let welcomeMessage = "Hola ¿En qué puedo ayudarte hoy?";
+window.welcomeMessage = welcomeMessage;
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log("Inicializando asistente virtual - " + new Date().toLocaleTimeString());
     window.debugAssistant = function() {
@@ -146,7 +149,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // La eliminaremos en la función speakText cuando detecte que sessionJustStarted es true
     }
     
-    // Función para inicializar voces y mostrar bienvenida
+    // Variables para controlar la primera interacción
+    let firstInteractionDone = false;
+    let pendingWelcomeMessage = true; // Nueva variable para controlar mensaje pendiente
+
+    // Función para inicializar voces pero SIN mostrar bienvenida automáticamente
     function initializeVoicesAndWelcome() {
         // Buscar específicamente la voz de Helena
         const voices = window.speechSynthesis.getVoices();
@@ -164,27 +171,27 @@ document.addEventListener('DOMContentLoaded', function() {
         // Marcar como cargadas
         voicesLoaded = true;
         
-        // MODIFICADO: Añadir el mensaje de bienvenida CON síntesis de voz
-        addMessage(welcomeMessage, 'assistant', sessionJustStarted || true);
+        // Verificar si ya se mostró un saludo anteriormente a este usuario
+        const welcomeShown = localStorage.getItem('welcomeMessageShown') === 'true';
+        const sessionJustStarted = localStorage.getItem('sessionJustStarted') === 'true';
         
-        // Si no pudimos activar el audio automáticamente pero acabamos de iniciar sesión
-        // mostrar un mensaje más destacado para pedir interacción
-        if (sessionJustStarted && !firstInteractionDone) {
+        // Solo mostrar mensaje de bienvenida si es la primera sesión y nunca se ha mostrado
+        if (sessionJustStarted && !welcomeShown) {
+            console.log("Primera sesión detectada - preparando mensaje de bienvenida");
+            // Aún necesitamos interacción, mostramos mensaje para activar
             const messageDiv = document.createElement('div');
             messageDiv.classList.add('message', 'system', 'highlight');
-            messageDiv.innerHTML = '<div class="message-content"><i class="fas fa-exclamation-circle"></i> <strong>¡Haz clic en cualquier parte para activar la voz!</strong></div>';
+            messageDiv.innerHTML = '<div class="message-content"><i class="fas fa-hand-pointer"></i> <strong>¡Haz clic en cualquier parte para activar el asistente de voz!</strong></div>';
             chatBody.appendChild(messageDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
         } else {
-            // Mensaje normal de interacción necesaria
-            const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message', 'system');
-            messageDiv.innerHTML = '<div class="message-content"><i class="fas fa-info-circle"></i> Haz clic en cualquier lugar para activar la síntesis de voz.</div>';
-            chatBody.appendChild(messageDiv);
+            // No es primera sesión o ya se mostró bienvenida, no mostramos nada
+            pendingWelcomeMessage = false;
+            console.log("No es primera sesión o ya se mostró bienvenida previamente");
         }
     }
     
-    // Añadir detector de interacción para activar síntesis
-    let firstInteractionDone = false;
+    // Modificar el detector de interacción para activar el mensaje de bienvenida
     document.addEventListener('click', function() {
         if (!firstInteractionDone) {
             firstInteractionDone = true;
@@ -198,15 +205,48 @@ document.addEventListener('DOMContentLoaded', function() {
                 // También podemos ejecutar una síntesis vacía para inicializar el sistema
                 window.speechSynthesis.cancel();
                 
-                // Opcionalmente, dar feedback al usuario
-                const infoMsg = document.querySelector('.message.system');
+                // Remover mensaje de solicitud de interacción
+                const infoMsg = document.querySelector('.message.system.highlight');
                 if (infoMsg) {
-                    infoMsg.innerHTML = '<div class="message-content"><i class="fas fa-check-circle"></i> ¡Síntesis de voz activada correctamente!</div>';
+                    infoMsg.remove();
+                }
+                
+                // Verificar si es primera sesión y no se ha mostrado saludo
+                const sessionJustStarted = localStorage.getItem('sessionJustStarted') === 'true';
+                const welcomeShown = localStorage.getItem('welcomeMessageShown') === 'true';
+                
+                // Mostrar mensaje de bienvenida después de la interacción SOLO si es primera sesión
+                if (pendingWelcomeMessage && sessionJustStarted && !welcomeShown) {
+                    pendingWelcomeMessage = false;
+                    
+                    // Marcar que ya se mostró el saludo para que no vuelva a aparecer
+                    localStorage.setItem('welcomeMessageShown', 'true');
+                    
+                    // Obtener el usuario del localStorage para personalizar mensaje
+                    const user = obtenerUsuario();
+                    let welcomeMessage = "Hola ¿En qué puedo ayudarte hoy?";
+                    
+                    if (user && user.nombre) {
+                        welcomeMessage = `¡Bienvenido ${user.nombre}! ¿Qué quieres comer ahora?`;
+                    }
+                    
+                    // Activar síntesis de voz por defecto
+                    isSpeakingEnabled = true;
+                    localStorage.setItem('speechEnabled', 'true');
+                    updateSpeakButtonUI();
+                    
+                    // Activar modo conversación por defecto
+                    isAutoConversationEnabled = true; 
+                    localStorage.setItem('autoConversationEnabled', 'true');
+                    updateAutoConversationButtonUI();
+                    
+                    // Mostrar mensaje con síntesis de voz ahora que es seguro hacerlo
                     setTimeout(() => {
-                        if (infoMsg.parentNode) {
-                            infoMsg.remove();
-                        }
-                    }, 3000);
+                        addMessage(welcomeMessage, 'assistant', true);
+                    }, 300);
+                    
+                    // Eliminar la bandera de sesión recién iniciada
+                    localStorage.removeItem('sessionJustStarted');
                 }
             } catch (e) {
                 console.error("Error al desbloquear audio:", e);
@@ -818,4 +858,85 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log("Mostrando categoría:", categoria);
         // Aquí tu código para filtrar y mostrar productos de esa categoría
     }
+});
+
+// AÑADIDO: Código para el banner de activación del modo conversación
+document.addEventListener('DOMContentLoaded', function() {
+    // Este código debe ejecutarse DESPUÉS de que se han definido todas las variables y funciones necesarias
+    setTimeout(function() {
+        // Verificar si ya se ha mostrado el banner anteriormente
+        if (localStorage.getItem('conversationBannerShown') === 'true') {
+            return; // No mostrar el banner si ya se ha mostrado antes
+        }
+        
+        // Verificar si el modo conversación ya está activado
+        if (localStorage.getItem('autoConversationEnabled') === 'true') {
+            localStorage.setItem('conversationBannerShown', 'true');
+            return; // No mostrar el banner si el modo conversación ya está activo
+        }
+        
+        // Crear el banner
+        const banner = document.createElement('div');
+        banner.id = 'conversationBanner';
+        banner.className = 'conversation-activation-banner';
+        
+        banner.innerHTML = `
+            <div class="banner-content">
+                <i class="fas fa-comments"></i>
+                <span>Activa el modo conversación para una mejor experiencia</span>
+                <button id="activateConversationBtn" class="btn btn-sm btn-light ms-3">Activar ahora</button>
+                <button id="closeBannerBtn" class="btn btn-sm btn-outline-light ms-2">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        
+        // Añadir el banner al inicio del documento
+        document.body.insertBefore(banner, document.body.firstChild);
+        
+        // Manejar el evento de activación
+        document.getElementById('activateConversationBtn').addEventListener('click', function() {
+            // Acceder a las variables globales (window) en lugar de las variables locales
+            window.isAutoConversationEnabled = true;
+            localStorage.setItem('autoConversationEnabled', 'true');
+            
+            // Actualizar la UI si está disponible la función
+            if (typeof window.updateAutoConversationButtonUI === 'function') {
+                window.updateAutoConversationButtonUI();
+            } else if (document.getElementById('autoConversationBtn')) {
+                // Actualización alternativa si la función no está disponible
+                document.getElementById('autoConversationBtn').classList.add('active');
+            }
+            
+            // Cerrar el banner con animación
+            hideBanner();
+            
+            // Mostrar mensaje de confirmación en el chat
+            const chatPanel = document.getElementById('chatPanel');
+            if (chatPanel && chatPanel.style.display !== 'none' && typeof window.addMessage === 'function') {
+                window.addMessage("Modo conversación activado. El asistente te escuchará automáticamente después de cada respuesta.", 'assistant', false);
+            }
+        });
+        
+        // Manejar el evento de cierre
+        document.getElementById('closeBannerBtn').addEventListener('click', function() {
+            hideBanner();
+        });
+        
+        // Función para ocultar el banner con animación
+        function hideBanner() {
+            const banner = document.getElementById('conversationBanner');
+            banner.style.animation = 'slideUp 0.5s forwards';
+            
+            // Marcar como mostrado para que no vuelva a aparecer
+            localStorage.setItem('conversationBannerShown', 'true');
+            
+            // Eliminar el banner después de la animación
+            setTimeout(() => {
+                if (banner && banner.parentNode) {
+                    banner.parentNode.removeChild(banner);
+                }
+            }, 500);
+        }
+    }, 1500);
 });

@@ -624,6 +624,30 @@ def face_login():
             temp_file.write(image_data)
             
         try:
+            # Verificar primero la cantidad de rostros
+            img = cv2.imread(temp_file_path)
+            detector = cv2.FaceDetectorYN.create(
+                "FaceRecognition/dnns/face_detection_yunet_2023mar.onnx", 
+                "", 
+                (img.shape[1], img.shape[0])
+            )
+            
+            # Realizar la detección
+            _, faces = detector.detect(img)
+            
+            # Validar cantidad de rostros
+            if faces is None or len(faces) == 0:
+                return jsonify({
+                    'success': False,
+                    'error': 'No se detectaron rostros en la imagen'
+                }), 400
+                
+            if len(faces) > 1:
+                return jsonify({
+                    'success': False,
+                    'error': 'Se detectaron múltiples personas. Por favor, intenta con una sola persona en la cámara'
+                }), 400
+            
             # Buscar todos los usuarios que tengan token facial
             users_with_face = list(users_collection.find({'faceToken': {'$exists': True}}))
             
@@ -639,11 +663,10 @@ def face_login():
             # Procesar la imagen para verificar si hay rostros
             result = get_face_embedding(temp_file_path)
             
-            if "error" in result and "No se detectaron rostros" in result["error"]:
-                print("No se detectaron rostros en la imagen enviada")
+            if not result["success"]:
                 return jsonify({
                     'success': False,
-                    'error': 'No se detectaron rostros en la imagen'
+                    'error': result.get("error", "Error al procesar la imagen facial")
                 }), 400
                 
             # Para cada usuario, verificar si coincide con la imagen

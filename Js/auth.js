@@ -387,7 +387,7 @@ async function obtenerPerfil() {
     }
 }
 
-// Función para autenticar con Face ID - reemplazar la implementación actual
+// Función para autenticar con Face ID
 async function autenticarConFaceId() {
     try {
         // Activar cámara
@@ -408,6 +408,7 @@ async function autenticarConFaceId() {
         await new Promise(resolve => {
             video.onloadedmetadata = resolve;
         });
+        await video.play();
         
         // Cambiar estado visual
         document.getElementById('faceIdInitial').classList.add('d-none');
@@ -429,7 +430,30 @@ async function autenticarConFaceId() {
         // Detener la cámara
         stream.getTracks().forEach(track => track.stop());
         
-        // Enviar al servidor
+        // Verificar la cantidad de rostros
+        try {
+            const faceResult = await verificarRostros(imageData);
+            const faceCount = faceResult.count;
+            
+            // Caso: 0 rostros
+            if (faceCount === 0) {
+                throw new Error('No se ha detectado ninguna cara. Inténtalo de nuevo.');
+            }
+            
+            // Caso: 2+ rostros
+            if (faceCount > 1) {
+                throw new Error('Se detectaron múltiples personas. Por favor, intenta nuevamente con una sola persona en la cámara.');
+            }
+            
+            // Si llegamos aquí, hay exactamente 1 rostro (caso ideal)
+            console.log('Rostro único detectado, procediendo con la autenticación...');
+            
+        } catch (faceError) {
+            console.error('Error en verificación de rostros:', faceError);
+            throw faceError; // Propagar el error para ser manejado en el catch principal
+        }
+        
+        // Enviar al servidor para autenticación (solo si hay 1 rostro)
         const response = await fetch(`${API_URL}/auth/face-login`, {
             method: 'POST',
             headers: {
@@ -498,13 +522,20 @@ async function autenticarConFaceId() {
             } else {
                 document.getElementById('goToRegisterBtn').classList.remove('d-none');
             }
-        } else if (error.message.includes('No se detectaron rostros')) {
-            mensajeError = 'No se detectó ningún rostro en la imagen. Inténtalo de nuevo o usa email y contraseña.';
+        } else if (error.message.includes('No se ha detectado ninguna cara')) {
+            mensajeError = 'No se detectó ningún rostro en la imagen. Asegúrate de estar bien iluminado y centrado en la cámara.';
             
             // Cambiar el mensaje en el modal
             document.querySelector('#faceIdError h5').textContent = 'No se detectó rostro';
             document.querySelector('#faceIdError p').textContent = 
-                'Asegúrate de estar bien iluminado y mirando directamente a la cámara, o inicia sesión con tu usuario y contraseña.';
+                'No se detectó ninguna cara en la imagen. Asegúrate de estar bien iluminado y centrado en la cámara.';
+        } else if (error.message.includes('Se detectaron múltiples personas')) {
+            mensajeError = 'Se detectaron múltiples personas. Por favor, intenta nuevamente estando solo frente a la cámara.';
+            
+            // Cambiar el mensaje en el modal
+            document.querySelector('#faceIdError h5').textContent = 'Múltiples rostros detectados';
+            document.querySelector('#faceIdError p').textContent = 
+                'Se detectaron varias personas en la imagen. Por favor, asegúrate de estar solo frente a la cámara.';
         } else {
             mensajeError = 'Error al verificar identidad. Usa email y contraseña para iniciar sesión.';
         }
