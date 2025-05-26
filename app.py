@@ -16,6 +16,7 @@ from FaceRecognition.faceRecognition import obtener_token
 # Importar el módulo faceAnalizer con las funciones necesarias
 from FaceRecognition.faceAnalizer import verify_face, get_face_embedding
 import cv2  # Importar OpenCV
+from ModeloIAGemini.TestIAGemini import generar_respuesta_texto
 
 app = Flask(__name__)
 CORS(app, resources={
@@ -900,6 +901,115 @@ def count_faces_in_image():
         return jsonify({
             'success': False,
             'error': f'Error al procesar la imagen: {str(e)}'
+        }), 500
+
+@app.route('/api/special-recommendations', methods=['GET'])
+@token_required
+def get_special_recommendations(current_user):
+    try:
+        # Verificar si el usuario tiene preferencias analizadas
+        preferences = current_user.get('preferences_analysis')
+        
+        if not preferences:
+            return jsonify({
+                'success': False,
+                'message': 'No hay preferencias disponibles para generar recomendaciones'
+            }), 404
+        
+        # Obtener la hora actual para contextualizar las recomendaciones
+        now = datetime.datetime.now()
+        hour = now.hour
+        
+        if hour >= 5 and hour < 11:
+            time_of_day = "desayuno"
+        elif hour >= 11 and hour < 15:
+            time_of_day = "almuerzo"
+        elif hour >= 15 and hour < 19:
+            time_of_day = "merienda"
+        else:
+            time_of_day = "cena"
+        
+        # Diccionario de imágenes por categoría
+        image_dict = {
+            "desayuno": "https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=600",
+            "almuerzo": "https://images.unsplash.com/photo-1547592180-85f173990554?w=600",
+            "merienda": "https://images.unsplash.com/photo-1541599188778-cdc73298e8fd?w=600",
+            "cena": "https://images.unsplash.com/photo-1574484284002-952d92456975?w=600",
+            "postre": "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=600",
+            "saludable": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600"
+        }
+        
+        # Crear el prompt para Gemini
+        prompt = f"""
+        Basándote en estas preferencias del usuario:
+        {preferences}
+        
+        Actualmente es hora de {time_of_day} ({hour}:00 horas).
+        
+        Sugiere 3 recetas caseras que:
+        1. Se adapten a la hora del día ({time_of_day})
+        2. Respeten las preferencias del usuario
+        3. Sean relativamente sencillas de preparar en casa
+        
+        Devuelve solo las sugerencias con el siguiente formato JSON (sin explicaciones adicionales):
+        {{
+            "recomendaciones": [
+                {{
+                    "nombre": "Nombre del plato",
+                    "descripcion": "Breve descripción (máximo 60 caracteres)",
+                    "tiempo_preparacion": "XX minutos",
+                    "dificultad": "Fácil/Media/Difícil",
+                    "ingredientes": ["Ingrediente 1", "Ingrediente 2", "..."],
+                    "pasos": ["Paso 1", "Paso 2", "..."],
+                    "categoria": "desayuno, almuerzo, merienda, cena, postre o saludable"
+                }},
+                ...
+            ],
+            "mensaje": "Un breve mensaje personalizado sobre por qué estas recetas son adecuadas"
+        }}
+        """
+        
+        # Usar TestIAGemini para generar la respuesta
+        response_text = generar_respuesta_texto(prompt)
+        
+        # Procesar la respuesta para obtener solo el JSON
+        import json
+        import re
+        
+        # Extraer el bloque JSON si está dentro de comillas de código
+        json_match = re.search(r'```json\n(.*?)\n```', response_text, re.DOTALL)
+        if json_match:
+            json_str = json_match.group(1)
+        else:
+            json_str = response_text
+        
+        try:
+            recommendations = json.loads(json_str)
+            
+            # Añadir URLs de imágenes basadas en la categoría
+            for receta in recommendations.get('recomendaciones', []):
+                categoria = receta.get('categoria', time_of_day).lower()
+                if categoria in image_dict:
+                    receta['imagen_url'] = image_dict[categoria]
+                else:
+                    receta['imagen_url'] = image_dict.get('saludable')  # Imagen predeterminada
+            
+            return jsonify({
+                'success': True,
+                'data': recommendations
+            })
+        except json.JSONDecodeError:
+            return jsonify({
+                'success': False,
+                'message': 'Error al analizar las recomendaciones',
+                'rawResponse': response_text
+            }), 500
+            
+    except Exception as e:
+        print(f"Error al generar recomendaciones especiales: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'Error al generar recomendaciones: {str(e)}'
         }), 500
 
 if __name__ == '__main__':

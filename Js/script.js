@@ -211,43 +211,33 @@ document.addEventListener('DOMContentLoaded', function() {
                     infoMsg.remove();
                 }
                 
-                // Verificar si es primera sesión y no se ha mostrado saludo
-                const sessionJustStarted = localStorage.getItem('sessionJustStarted') === 'true';
-                const welcomeShown = localStorage.getItem('welcomeMessageShown') === 'true';
+                // SIMPLIFICACIÓN: Mostrar siempre mensaje de bienvenida al primer clic
+                // Obtener el usuario del localStorage para personalizar mensaje
+                const user = obtenerUsuario();
+                let welcomeMessage = "Hola ¿En qué puedo ayudarte hoy?";
                 
-                // Mostrar mensaje de bienvenida después de la interacción SOLO si es primera sesión
-                if (pendingWelcomeMessage && sessionJustStarted && !welcomeShown) {
-                    pendingWelcomeMessage = false;
-                    
-                    // Marcar que ya se mostró el saludo para que no vuelva a aparecer
-                    localStorage.setItem('welcomeMessageShown', 'true');
-                    
-                    // Obtener el usuario del localStorage para personalizar mensaje
-                    const user = obtenerUsuario();
-                    let welcomeMessage = "Hola ¿En qué puedo ayudarte hoy?";
-                    
-                    if (user && user.nombre) {
-                        welcomeMessage = `¡Bienvenido ${user.nombre}! ¿Qué quieres comer ahora?`;
-                    }
-                    
-                    // Activar síntesis de voz por defecto
-                    isSpeakingEnabled = true;
-                    localStorage.setItem('speechEnabled', 'true');
-                    updateSpeakButtonUI();
-                    
-                    // Activar modo conversación por defecto
-                    isAutoConversationEnabled = true; 
-                    localStorage.setItem('autoConversationEnabled', 'true');
-                    updateAutoConversationButtonUI();
-                    
-                    // Mostrar mensaje con síntesis de voz ahora que es seguro hacerlo
-                    setTimeout(() => {
-                        addMessage(welcomeMessage, 'assistant', true);
-                    }, 300);
-                    
-                    // Eliminar la bandera de sesión recién iniciada
-                    localStorage.removeItem('sessionJustStarted');
+                if (user && user.nombre) {
+                    welcomeMessage = `¡Bienvenido ${user.nombre}! ¿Qué quieres comer ahora?`;
                 }
+                
+                // Activar síntesis de voz por defecto
+                isSpeakingEnabled = true;
+                localStorage.setItem('speechEnabled', 'true');
+                updateSpeakButtonUI();
+                
+                // Activar modo conversación por defecto
+                isAutoConversationEnabled = true; 
+                localStorage.setItem('autoConversationEnabled', 'true');
+                updateAutoConversationButtonUI();
+                
+                // Mostrar mensaje con síntesis de voz ahora que es seguro hacerlo
+                setTimeout(() => {
+                    addMessage(welcomeMessage, 'assistant', true);
+                }, 300);
+                
+                // Marcar que ya se mostró el saludo
+                localStorage.setItem('welcomeMessageShown', 'true');
+                localStorage.removeItem('sessionJustStarted');
             } catch (e) {
                 console.error("Error al desbloquear audio:", e);
             }
@@ -296,32 +286,127 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.removeItem('sessionJustStarted');
         }
         
-        // Crear nueva instancia de síntesis
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'es-ES';
-        utterance.rate = 1.0;
-        utterance.pitch = 1.0;
+        // NUEVA FUNCIONALIDAD: Dividir textos largos en fragmentos más pequeños
+        const MAX_CHARS = 150; // Limitar a 150 caracteres por fragmento
+        let textFragments = [];
         
-        // Asignar la voz de Helena
-        if (helenaVoice) {
-            utterance.voice = helenaVoice;
-            console.log("Usando voz de Helena:", helenaVoice.name);
+        // Verificar si el texto es demasiado largo
+        if (text.length > MAX_CHARS) {
+            console.log(`Texto demasiado largo (${text.length} caracteres), dividiendo en fragmentos...`);
+            
+            // Dividir por frases completas
+            const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+            
+            let currentFragment = '';
+            
+            // Agrupar frases en fragmentos que no excedan MAX_CHARS
+            for (let i = 0; i < sentences.length; i++) {
+                let sentence = sentences[i].trim();
+                
+                if ((currentFragment + sentence).length <= MAX_CHARS) {
+                    currentFragment += sentence + ' ';
+                } else {
+                    // Si el fragmento actual tiene contenido, guardarlo
+                    if (currentFragment) {
+                        textFragments.push(currentFragment.trim());
+                    }
+                    // Iniciar nuevo fragmento con la frase actual
+                    currentFragment = sentence + ' ';
+                }
+            }
+            
+            // Agregar el último fragmento si quedó contenido
+            if (currentFragment) {
+                textFragments.push(currentFragment.trim());
+            }
+            
+            console.log(`Texto dividido en ${textFragments.length} fragmentos`);
         } else {
-            console.log("Voz de Helena no disponible, usando voz predeterminada");
+            // Si el texto no es largo, usar como está
+            textFragments = [text];
         }
         
-        // Guardar referencia a la utterance actual
-        currentUtterance = utterance;
-        
-        // Log del estado actual
-        const pendingActionStr = pendingAction ? `${pendingAction.action} - ${pendingAction.target}` : 'ninguna';
-        console.log(`Iniciando síntesis. Modo conversación: ${isAutoConversationEnabled}. Acción pendiente: ${pendingActionStr}`);
-        
-        // Evento al terminar de hablar
-        utterance.onend = function() {
-            console.log("Síntesis finalizada");
-            currentUtterance = null;
+        // Función para hablar un fragmento específico
+        function speakFragment(index) {
+            if (index >= textFragments.length) {
+                // Todos los fragmentos han sido hablados
+                console.log("Síntesis finalizada (todos los fragmentos)");
+                currentUtterance = null;
+                
+                // Manejar acciones pendientes o activar micrófono
+                handleSpeechEnd();
+                return;
+            }
             
+            const fragment = textFragments[index];
+            console.log(`Hablando fragmento ${index+1}/${textFragments.length}`);
+            
+            // Crear nueva instancia de síntesis
+            const utterance = new SpeechSynthesisUtterance(fragment);
+            utterance.lang = 'es-ES';
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            
+            // Asignar la voz de Helena
+            if (helenaVoice) {
+                utterance.voice = helenaVoice;
+                console.log("Usando voz de Helena:", helenaVoice.name);
+            } else {
+                console.log("Voz de Helena no disponible, usando voz predeterminada");
+            }
+            
+            // Guardar referencia a la utterance actual
+            currentUtterance = utterance;
+            utterance.startTime = new Date().getTime();
+            
+            // Cuando termine este fragmento, hablar el siguiente
+            utterance.onend = function() {
+                console.log(`Fragmento ${index+1} completado`);
+                // Pasar al siguiente fragmento después de una breve pausa
+                setTimeout(() => {
+                    speakFragment(index + 1);
+                }, 100);
+            };
+            
+            // Manejar errores de síntesis
+            utterance.onerror = function(event) {
+                // Ignorar errores de tipo "interrupted" cuando son intencionales
+                if (event.error === 'interrupted' && (!chatPanel.style.display || chatPanel.style.display === 'none')) {
+                    console.log("Síntesis interrumpida intencionalmente al cerrar el chat");
+                    currentUtterance = null;
+                    return; // No mostrar error ni ejecutar acciones pendientes
+                }
+                
+                console.error("Error en síntesis de voz:", event);
+                console.error("Fragmento que causó el error:", fragment);
+                
+                // Si es un error de tipo interrupted pero estamos hablando
+                if (event.error === 'interrupted' && chatPanel.style.display === 'flex') {
+                    console.log("Síntesis interrumpida por el navegador, intentando continuar...");
+                    // Intentar continuar con el siguiente fragmento después de una pausa
+                    setTimeout(() => {
+                        speakFragment(index + 1);
+                    }, 300);
+                    return;
+                }
+                
+                currentUtterance = null;
+                
+                // Si hay acción pendiente y error de síntesis, ejecutar igualmente
+                if (pendingAction) {
+                    console.log("Error de síntesis pero hay acción pendiente, ejecutando:", pendingAction);
+                    const actionToExecute = {...pendingAction};
+                    pendingAction = null;
+                    executeAction(actionToExecute);
+                }
+            };
+            
+            // Reproducir audio
+            window.speechSynthesis.speak(utterance);
+        }
+        
+        // Función para manejar el fin de la síntesis completa
+        function handleSpeechEnd() {
             // Si hay una acción pendiente, ejecutarla ahora
             if (pendingAction) {
                 console.log("Ejecutando acción pendiente después de hablar:", pendingAction);
@@ -350,38 +435,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 }
             }, 500);
-        };
+        }
         
-        // Capturar errores de síntesis
-        utterance.onerror = function(event) {
-            // Ignorar errores de tipo "interrupted" cuando son intencionales
-            if (event.error === 'interrupted' && !chatPanel.style.display || chatPanel.style.display === 'none') {
-                console.log("Síntesis interrumpida intencionalmente al cerrar el chat");
-                currentUtterance = null;
-                return; // No mostrar error ni ejecutar acciones pendientes
-            }
-            
-            console.error("Error en síntesis de voz:", event);
-            console.error("Mensaje que causó el error:", text);
-            console.error("Estado actual del asistente:", {
-                isSpeaking: window.speechSynthesis.speaking,
-                isPaused: window.speechSynthesis.paused,
-                pendingAction
-            });
-            
-            currentUtterance = null;
-            
-            // Si hay acción pendiente y error de síntesis, ejecutar igualmente
-            if (pendingAction) {
-                console.log("Error de síntesis pero hay acción pendiente, ejecutando:", pendingAction);
-                const actionToExecute = {...pendingAction};
-                pendingAction = null;
-                executeAction(actionToExecute);
-            }
-        };
-        
-        // Reproducir audio
-        window.speechSynthesis.speak(utterance);
+        // Comenzar la síntesis con el primer fragmento
+        speakFragment(0);
     }
     
     // Asegurarse de que las voces estén cargadas

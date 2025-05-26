@@ -71,7 +71,7 @@ def detect_action_command(message):
     # Comandos para navegar a categorías
     categories = {
         "pizza": ["pizza", "pizzas", "ver pizzas", "quiero pizza", "muestra las pizzas", "pizzería"],
-        "hamburguesas": ["hamburguesa", "hamburguesas", "ver hamburguesas", "quiero hamburguesa", "muestra las hamburguesas"],
+        "hamburguesas": ["hamburguesas", "hamburguesas", "ver hamburguesas", "quiero hamburguesa", "muestra las hamburguesas"],
         "asiatica": ["asiatica", "asiática", "comida asiatica", "comida asiática", "sushi", "ramen", "comida china", "ver comida asiatica"],
         "saludable": ["saludable", "comida saludable", "comida sana", "ensaladas", "frutas", "verduras", "ver comida saludable"],
         "postres": ["postres", "golosinas", "dulces", "ver postres", "quiero postre", "muestra los postres"],
