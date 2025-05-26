@@ -124,7 +124,11 @@ Proyecto-Ubicua/
 │
 ├── app.py                  # Archivo principal de la API Flask 
 ├── About
-    └── requirements.txt    #Para instalar librerias
+│    └── requirements.txt    #Para instalar librerias
+├── FaceRecognition
+│    └── dnns/
+│        └── face_detection_yunet_2023mar.onnx #Pesos para realizar la deteccion y reconocimiento de cara (No diponible en el repositorio)
+│            face_recognition_sface_2021dec.onnx
 ├── .env                    # (NO SE INCLUYE, solo ejemplo local)
 ├── Modelos3D/              # Carpeta para modelos 3D (vacía por defecto)
 │   └── Fruta/
