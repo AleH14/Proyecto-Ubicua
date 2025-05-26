@@ -97,7 +97,7 @@ GOOGLE_API_KEY=tu_apikey_google_gemini
 
 ## Uso Básico
 
-Un ejemplo simple para iniciar la API Flask (ajusta según tu estructura):
+Un ejemplo simple para iniciar la API Flask:
 
 ```python
 from flask import Flask
@@ -127,7 +127,7 @@ python app.py
 ```
 Proyecto-Ubicua/
 │
-├── app.py                  # Archivo principal de la API Flask (ajusta según el nombre real)
+├── app.py                  # Archivo principal de la API Flask 
 ├── requirements.txt
 ├── .env                    # (NO SE INCLUYE, solo ejemplo local)
 ├── Modelos3D/              # Carpeta para modelos 3D (vacía por defecto)
