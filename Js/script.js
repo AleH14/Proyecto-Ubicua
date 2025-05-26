@@ -1,19 +1,20 @@
-// Funcionalidad del asistente virtual (chat y voz)
-document.addEventListener('DOMContentLoaded', function() {
+// Variables globales para exponer las funciones
+window.startListening = null;
+window.stopListening = null;
+window.addMessage = null;
+window.speakText = null;
+window.updateSpeakButtonUI = null;
+window.updateAutoConversationButtonUI = null;
+window.initChatAssistant = null;
+
+// Exponer el mensaje de bienvenida al scope global
+let welcomeMessage = "Hola ¿En qué puedo ayudarte hoy?";
+window.welcomeMessage = welcomeMessage;
+
+// Función principal de inicialización
+function initializeAssistant(isMainPage) {
     console.log("Inicializando asistente virtual - " + new Date().toLocaleTimeString());
-    window.debugAssistant = function() {
-        console.log({
-            isListening,
-            isSpeakingEnabled,
-            isAutoConversationEnabled,
-            hasPendingAction: pendingAction !== null,
-            pendingAction,
-            isSpeaking: window.speechSynthesis.speaking,
-            chatPanelVisible: chatPanel.style.display !== 'none',
-            userLoggedIn: !!localStorage.getItem('token')
-        });
-    };
-    console.log("Para depurar el estado del asistente, ejecuta window.debugAssistant() en la consola");
+    console.log("Modo página principal:", isMainPage);
     
     // Elementos DOM
     const assistantBtn = document.getElementById('assistantBtn');
@@ -24,35 +25,52 @@ document.addEventListener('DOMContentLoaded', function() {
     const sendMessageBtn = document.getElementById('sendMessageBtn');
     const chatBody = document.getElementById('chatBody');
     
-    // Estado de la aplicación (añadir esta nueva variable)
+    // Estado de la aplicación
     let isListening = false;
     let isSpeakingEnabled = false;
-    let isAutoConversationEnabled = true; // Por defecto activado
+    let isAutoConversationEnabled = isMainPage; // Solo activar por defecto en página principal
     let currentUtterance = null;
     let voicesLoaded = false;
-    let helenaVoice = null; // Cambiado de maleSpanishVoice
-    let pendingAction = null; // Nueva variable para controlar acciones pendientes
-    
-    // Referencias a botones (añadir esta nueva referencia)
+    let helenaVoice = null;
+    let pendingAction = null;
+    let firstInteractionDone = false;
+    let pendingWelcomeMessage = true;
+
+    // Referencias a botones
     const speakToggleBtn = document.getElementById('speakToggleBtn');
     const autoConversationBtn = document.getElementById('autoConversationBtn');
+    
+    // Limpiar el chat 
+    chatBody.innerHTML = '';
+    
+    // IMPORTANTE: Mover la obtención del usuario ANTES de usarlo
+    // Obtener el usuario del localStorage
+    const user = obtenerUsuario();
 
-    // AÑADIR: Exponer las funciones principales al scope global
-    window.startListening = startListening;
-    window.stopListening = stopListening;
-    window.addMessage = addMessage;
-    window.speakText = speakText;
-    // Cambiar esto:
-    // window.isAutoConversationEnabled = isAutoConversationEnabled; 
+    // Determinar el mensaje de bienvenida según si es primera vez o no
+    let welcomeMessage;
+    const isFirstLogin = localStorage.getItem(`firstLogin_${user?.id || 'guest'}`) !== 'true';
 
-    // Por esto (para exponer la referencia, no solo el valor):
-    Object.defineProperty(window, 'isAutoConversationEnabled', {
-        get: function() { return isAutoConversationEnabled; },
-        set: function(value) { isAutoConversationEnabled = value; }
-    });
-
+    if (isMainPage && user && user.nombre) {
+        // Solo usar el saludo personalizado de comida si es la primera vez
+        if (isFirstLogin) {
+            welcomeMessage = `Hola ${user.nombre}, ¿qué quieres comer ahora?`;
+            // Marcar que ya no es primera vez para este usuario
+            localStorage.setItem(`firstLogin_${user.id}`, 'true');
+        } else {
+            welcomeMessage = `Hola ${user.nombre}, ¿en qué puedo ayudarte?`;
+        }
+    } else {
+        welcomeMessage = "Hola, ¿en qué puedo ayudarte hoy?";
+        
+    }
+    
+    window.welcomeMessage = welcomeMessage;
+    
     // Función para actualizar el estado visual del botón de conversación automática
     function updateAutoConversationButtonUI() {
+        if (!autoConversationBtn) return;
+        
         if (isAutoConversationEnabled) {
             autoConversationBtn.classList.add('active');
             autoConversationBtn.setAttribute('title', 'Desactivar modo conversación');
@@ -89,14 +107,10 @@ document.addEventListener('DOMContentLoaded', function() {
     chatBody.innerHTML = '';
     
     // Obtener el usuario del localStorage
-    const user = obtenerUsuario();
-    let welcomeMessage = "Hola ¿En qué puedo ayudarte hoy?";
+
+
     
-    // Si hay un usuario logueado, personalizar el mensaje
-    if (user && user.nombre) {
-        welcomeMessage = `¡Bienvenido ${user.nombre}! ¿Qué quieres comer ahora?`;
-    }
-    
+
     // Verificar si acabamos de iniciar sesión
     const sessionJustStarted = localStorage.getItem('sessionJustStarted') === 'true';
     if (sessionJustStarted) {
@@ -146,7 +160,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // La eliminaremos en la función speakText cuando detecte que sessionJustStarted es true
     }
     
-    // Función para inicializar voces y mostrar bienvenida
+    // Variables para controlar la primera interacción
+
+
+    // Función para inicializar voces pero SIN mostrar bienvenida automáticamente
     function initializeVoicesAndWelcome() {
         // Buscar específicamente la voz de Helena
         const voices = window.speechSynthesis.getVoices();
@@ -164,27 +181,27 @@ document.addEventListener('DOMContentLoaded', function() {
         // Marcar como cargadas
         voicesLoaded = true;
         
-        // MODIFICADO: Añadir el mensaje de bienvenida CON síntesis de voz
-        addMessage(welcomeMessage, 'assistant', sessionJustStarted || true);
+        // Verificar si ya se mostró un saludo anteriormente a este usuario
+        const welcomeShown = localStorage.getItem('welcomeMessageShown') === 'true';
+        const sessionJustStarted = localStorage.getItem('sessionJustStarted') === 'true';
         
-        // Si no pudimos activar el audio automáticamente pero acabamos de iniciar sesión
-        // mostrar un mensaje más destacado para pedir interacción
-        if (sessionJustStarted && !firstInteractionDone) {
+        // Solo mostrar mensaje de bienvenida si es la primera sesión y nunca se ha mostrado
+        if (sessionJustStarted && !welcomeShown) {
+            console.log("Primera sesión detectada - preparando mensaje de bienvenida");
+            // Aún necesitamos interacción, mostramos mensaje para activar
             const messageDiv = document.createElement('div');
             messageDiv.classList.add('message', 'system', 'highlight');
-            messageDiv.innerHTML = '<div class="message-content"><i class="fas fa-exclamation-circle"></i> <strong>¡Haz clic en cualquier parte para activar la voz!</strong></div>';
+            messageDiv.innerHTML = '<div class="message-content"><i class="fas fa-hand-pointer"></i> <strong>¡Haz clic en cualquier parte para activar el asistente de voz!</strong></div>';
             chatBody.appendChild(messageDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
         } else {
-            // Mensaje normal de interacción necesaria
-            const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message', 'system');
-            messageDiv.innerHTML = '<div class="message-content"><i class="fas fa-info-circle"></i> Haz clic en cualquier lugar para activar la síntesis de voz.</div>';
-            chatBody.appendChild(messageDiv);
+            // No es primera sesión o ya se mostró bienvenida, no mostramos nada
+            pendingWelcomeMessage = false;
+            console.log("No es primera sesión o ya se mostró bienvenida previamente");
         }
     }
     
-    // Añadir detector de interacción para activar síntesis
-    let firstInteractionDone = false;
+    // Modificar el detector de interacción para activar el mensaje de bienvenida
     document.addEventListener('click', function() {
         if (!firstInteractionDone) {
             firstInteractionDone = true;
@@ -198,16 +215,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 // También podemos ejecutar una síntesis vacía para inicializar el sistema
                 window.speechSynthesis.cancel();
                 
-                // Opcionalmente, dar feedback al usuario
-                const infoMsg = document.querySelector('.message.system');
+                // Remover mensaje de solicitud de interacción
+                const infoMsg = document.querySelector('.message.system.highlight');
                 if (infoMsg) {
-                    infoMsg.innerHTML = '<div class="message-content"><i class="fas fa-check-circle"></i> ¡Síntesis de voz activada correctamente!</div>';
-                    setTimeout(() => {
-                        if (infoMsg.parentNode) {
-                            infoMsg.remove();
-                        }
-                    }, 3000);
+                    infoMsg.remove();
                 }
+                
+                // Activar síntesis de voz por defecto
+                isSpeakingEnabled = true;
+                localStorage.setItem('speechEnabled', 'true');
+                updateSpeakButtonUI();
+                
+                // Activar modo conversación por defecto
+                isAutoConversationEnabled = true; 
+                localStorage.setItem('autoConversationEnabled', 'true');
+                updateAutoConversationButtonUI();
+                
+                // Mostrar mensaje con síntesis de voz ahora que es seguro hacerlo
+                setTimeout(() => {
+                    addMessage(welcomeMessage, 'assistant', true);
+                }, 300);
+                
+                // Marcar que ya se mostró el saludo
+                localStorage.setItem('welcomeMessageShown', 'true');
+                localStorage.removeItem('sessionJustStarted');
             } catch (e) {
                 console.error("Error al desbloquear audio:", e);
             }
@@ -256,32 +287,127 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.removeItem('sessionJustStarted');
         }
         
-        // Crear nueva instancia de síntesis
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'es-ES';
-        utterance.rate = 1.0;
-        utterance.pitch = 1.0;
+        // NUEVA FUNCIONALIDAD: Dividir textos largos en fragmentos más pequeños
+        const MAX_CHARS = 150; // Limitar a 150 caracteres por fragmento
+        let textFragments = [];
         
-        // Asignar la voz de Helena
-        if (helenaVoice) {
-            utterance.voice = helenaVoice;
-            console.log("Usando voz de Helena:", helenaVoice.name);
+        // Verificar si el texto es demasiado largo
+        if (text.length > MAX_CHARS) {
+            console.log(`Texto demasiado largo (${text.length} caracteres), dividiendo en fragmentos...`);
+            
+            // Dividir por frases completas
+            const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+            
+            let currentFragment = '';
+            
+            // Agrupar frases en fragmentos que no excedan MAX_CHARS
+            for (let i = 0; i < sentences.length; i++) {
+                let sentence = sentences[i].trim();
+                
+                if ((currentFragment + sentence).length <= MAX_CHARS) {
+                    currentFragment += sentence + ' ';
+                } else {
+                    // Si el fragmento actual tiene contenido, guardarlo
+                    if (currentFragment) {
+                        textFragments.push(currentFragment.trim());
+                    }
+                    // Iniciar nuevo fragmento con la frase actual
+                    currentFragment = sentence + ' ';
+                }
+            }
+            
+            // Agregar el último fragmento si quedó contenido
+            if (currentFragment) {
+                textFragments.push(currentFragment.trim());
+            }
+            
+            console.log(`Texto dividido en ${textFragments.length} fragmentos`);
         } else {
-            console.log("Voz de Helena no disponible, usando voz predeterminada");
+            // Si el texto no es largo, usar como está
+            textFragments = [text];
         }
         
-        // Guardar referencia a la utterance actual
-        currentUtterance = utterance;
-        
-        // Log del estado actual
-        const pendingActionStr = pendingAction ? `${pendingAction.action} - ${pendingAction.target}` : 'ninguna';
-        console.log(`Iniciando síntesis. Modo conversación: ${isAutoConversationEnabled}. Acción pendiente: ${pendingActionStr}`);
-        
-        // Evento al terminar de hablar
-        utterance.onend = function() {
-            console.log("Síntesis finalizada");
-            currentUtterance = null;
+        // Función para hablar un fragmento específico
+        function speakFragment(index) {
+            if (index >= textFragments.length) {
+                // Todos los fragmentos han sido hablados
+                console.log("Síntesis finalizada (todos los fragmentos)");
+                currentUtterance = null;
+                
+                // Manejar acciones pendientes o activar micrófono
+                handleSpeechEnd();
+                return;
+            }
             
+            const fragment = textFragments[index];
+            console.log(`Hablando fragmento ${index+1}/${textFragments.length}`);
+            
+            // Crear nueva instancia de síntesis
+            const utterance = new SpeechSynthesisUtterance(fragment);
+            utterance.lang = 'es-ES';
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            
+            // Asignar la voz de Helena
+            if (helenaVoice) {
+                utterance.voice = helenaVoice;
+                console.log("Usando voz de Helena:", helenaVoice.name);
+            } else {
+                console.log("Voz de Helena no disponible, usando voz predeterminada");
+            }
+            
+            // Guardar referencia a la utterance actual
+            currentUtterance = utterance;
+            utterance.startTime = new Date().getTime();
+            
+            // Cuando termine este fragmento, hablar el siguiente
+            utterance.onend = function() {
+                console.log(`Fragmento ${index+1} completado`);
+                // Pasar al siguiente fragmento después de una breve pausa
+                setTimeout(() => {
+                    speakFragment(index + 1);
+                }, 100);
+            };
+            
+            // Manejar errores de síntesis
+            utterance.onerror = function(event) {
+                // Ignorar errores de tipo "interrupted" cuando son intencionales
+                if (event.error === 'interrupted' && (!chatPanel.style.display || chatPanel.style.display === 'none')) {
+                    console.log("Síntesis interrumpida intencionalmente al cerrar el chat");
+                    currentUtterance = null;
+                    return; // No mostrar error ni ejecutar acciones pendientes
+                }
+                
+                console.error("Error en síntesis de voz:", event);
+                console.error("Fragmento que causó el error:", fragment);
+                
+                // Si es un error de tipo interrupted pero estamos hablando
+                if (event.error === 'interrupted' && chatPanel.style.display === 'flex') {
+                    console.log("Síntesis interrumpida por el navegador, intentando continuar...");
+                    // Intentar continuar con el siguiente fragmento después de una pausa
+                    setTimeout(() => {
+                        speakFragment(index + 1);
+                    }, 300);
+                    return;
+                }
+                
+                currentUtterance = null;
+                
+                // Si hay acción pendiente y error de síntesis, ejecutar igualmente
+                if (pendingAction) {
+                    console.log("Error de síntesis pero hay acción pendiente, ejecutando:", pendingAction);
+                    const actionToExecute = {...pendingAction};
+                    pendingAction = null;
+                    executeAction(actionToExecute);
+                }
+            };
+            
+            // Reproducir audio
+            window.speechSynthesis.speak(utterance);
+        }
+        
+        // Función para manejar el fin de la síntesis completa
+        function handleSpeechEnd() {
             // Si hay una acción pendiente, ejecutarla ahora
             if (pendingAction) {
                 console.log("Ejecutando acción pendiente después de hablar:", pendingAction);
@@ -310,38 +436,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 }
             }, 500);
-        };
+        }
         
-        // Capturar errores de síntesis
-        utterance.onerror = function(event) {
-            // Ignorar errores de tipo "interrupted" cuando son intencionales
-            if (event.error === 'interrupted' && !chatPanel.style.display || chatPanel.style.display === 'none') {
-                console.log("Síntesis interrumpida intencionalmente al cerrar el chat");
-                currentUtterance = null;
-                return; // No mostrar error ni ejecutar acciones pendientes
-            }
-            
-            console.error("Error en síntesis de voz:", event);
-            console.error("Mensaje que causó el error:", text);
-            console.error("Estado actual del asistente:", {
-                isSpeaking: window.speechSynthesis.speaking,
-                isPaused: window.speechSynthesis.paused,
-                pendingAction
-            });
-            
-            currentUtterance = null;
-            
-            // Si hay acción pendiente y error de síntesis, ejecutar igualmente
-            if (pendingAction) {
-                console.log("Error de síntesis pero hay acción pendiente, ejecutando:", pendingAction);
-                const actionToExecute = {...pendingAction};
-                pendingAction = null;
-                executeAction(actionToExecute);
-            }
-        };
-        
-        // Reproducir audio
-        window.speechSynthesis.speak(utterance);
+        // Comenzar la síntesis con el primer fragmento
+        speakFragment(0);
     }
     
     // Asegurarse de que las voces estén cargadas
@@ -444,7 +542,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Configura la solicitud con el token en el encabezado
+            // Configura la solicitud con el token en el encabezera
             const response = await fetch('http://localhost:5000/chat', {
                 method: 'POST',
                 headers: {
@@ -543,6 +641,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Si ya está escuchando, no hacer nada
         if (isListening) return;
+        
+        // Si el modo conversación automática está activo, desactivarlo
+        if (isAutoConversationEnabled) {
+            isAutoConversationEnabled = false;
+            localStorage.setItem('autoConversationEnabled', 'false');
+            updateAutoConversationButtonUI();
+            console.log("Modo conversación automática desactivado al usar el micrófono");
+        }
         
         isListening = true;
         voiceToggleBtn.innerHTML = '<i class="fas fa-stop"></i>';
@@ -727,6 +833,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     case 'orders':
                         window.location.href = 'mis-compras.html';
                         break;
+                    case 'home':  // Nuevo caso para ir a inicio
+                        window.location.href = 'interfaz.html';
+                        break;
                     default:
                         addMessage('No pude encontrar esa página.', 'assistant');
                         pendingAction = null; // Limpiar la acción pendiente
@@ -807,6 +916,21 @@ document.addEventListener('DOMContentLoaded', function() {
         utterance.startTime = new Date().getTime();
         return originalSpeak.call(window.speechSynthesis, utterance);
     };
+}
+
+// Exponer la función de inicialización
+window.initChatAssistant = initializeAssistant;
+
+// Iniciar cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    // Determinar si estamos en la página principal
+    const currentPage = window.location.pathname.split('/').pop();
+    const isMainPage = currentPage === 'interfaz.html' || currentPage === '' || currentPage === '/';
+    
+    // Solo iniciamos el asistente si window.isMainPage no está definido (cuando script.js se carga directamente)
+    if (window.isMainPage === undefined) {
+        initializeAssistant(isMainPage);
+    }
 });
 
 // Código para tu página index.html que detecte la categoría en la URL
@@ -818,4 +942,85 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log("Mostrando categoría:", categoria);
         // Aquí tu código para filtrar y mostrar productos de esa categoría
     }
+});
+
+// AÑADIDO: Código para el banner de activación del modo conversación
+document.addEventListener('DOMContentLoaded', function() {
+    // Este código debe ejecutarse DESPUÉS de que se han definido todas las variables y funciones necesarias
+    setTimeout(function() {
+        // Verificar si ya se ha mostrado el banner anteriormente
+        if (localStorage.getItem('conversationBannerShown') === 'true') {
+            return; // No mostrar el banner si ya se ha mostrado antes
+        }
+        
+        // Verificar si el modo conversación ya está activado
+        if (localStorage.getItem('autoConversationEnabled') === 'true') {
+            localStorage.setItem('conversationBannerShown', 'true');
+            return; // No mostrar el banner si el modo conversación ya está activo
+        }
+        
+        // Crear el banner
+        const banner = document.createElement('div');
+        banner.id = 'conversationBanner';
+        banner.className = 'conversation-activation-banner';
+        
+        banner.innerHTML = `
+            <div class="banner-content">
+                <i class="fas fa-comments"></i>
+                <span>Activa el modo conversación para una mejor experiencia</span>
+                <button id="activateConversationBtn" class="btn btn-sm btn-light ms-3">Activar ahora</button>
+                <button id="closeBannerBtn" class="btn btn-sm btn-outline-light ms-2">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        
+        // Añadir el banner al inicio del documento
+        document.body.insertBefore(banner, document.body.firstChild);
+        
+        // Manejar el evento de activación
+        document.getElementById('activateConversationBtn').addEventListener('click', function() {
+            // Acceder a las variables globales (window) en lugar de las variables locales
+            window.isAutoConversationEnabled = true;
+            localStorage.setItem('autoConversationEnabled', 'true');
+            
+            // Actualizar la UI si está disponible la función
+            if (typeof window.updateAutoConversationButtonUI === 'function') {
+                window.updateAutoConversationButtonUI();
+            } else if (document.getElementById('autoConversationBtn')) {
+                // Actualización alternativa si la función no está disponible
+                document.getElementById('autoConversationBtn').classList.add('active');
+            }
+            
+            // Cerrar el banner con animación
+            hideBanner();
+            
+            // Mostrar mensaje de confirmación en el chat
+            const chatPanel = document.getElementById('chatPanel');
+            if (chatPanel && chatPanel.style.display !== 'none' && typeof window.addMessage === 'function') {
+                window.addMessage("Modo conversación activado. El asistente te escuchará automáticamente después de cada respuesta.", 'assistant', false);
+            }
+        });
+        
+        // Manejar el evento de cierre
+        document.getElementById('closeBannerBtn').addEventListener('click', function() {
+            hideBanner();
+        });
+        
+        // Función para ocultar el banner con animación
+        function hideBanner() {
+            const banner = document.getElementById('conversationBanner');
+            banner.style.animation = 'slideUp 0.5s forwards';
+            
+            // Marcar como mostrado para que no vuelva a aparecer
+            localStorage.setItem('conversationBannerShown', 'true');
+            
+            // Eliminar el banner después de la animación
+            setTimeout(() => {
+                if (banner && banner.parentNode) {
+                    banner.parentNode.removeChild(banner);
+                }
+            }, 500);
+        }
+    }, 1500);
 });

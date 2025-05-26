@@ -45,6 +45,19 @@ def detect_action_command(message):
             "message": "Cerrando tu sesión..."
         }
     
+    # NUEVO: Comandos para ir a inicio/página principal
+    home_commands = ["ir a inicio", "volver a inicio", "pagina principal", "página principal", 
+                    "volver al inicio", "ir al inicio", "volver a la pagina principal", 
+                    "inicio", "pantalla principal", "menu principal", "menú principal"]
+    
+    if any(cmd in msg for cmd in home_commands):
+        print("🏠 Comando de ir a inicio detectado")
+        return {
+            "action": "navigate_to",
+            "target": "home",
+            "message": "Te llevo a la página principal..."
+        }
+    
     # Comandos para ir al perfil
     profile_commands = ["ver perfil", "mi perfil", "muestra mi perfil", "ir a mi perfil", 
                        "quiero ver mi perfil", "abre mi perfil", "llévame a mi perfil"]
@@ -71,7 +84,7 @@ def detect_action_command(message):
     # Comandos para navegar a categorías
     categories = {
         "pizza": ["pizza", "pizzas", "ver pizzas", "quiero pizza", "muestra las pizzas", "pizzería"],
-        "hamburguesas": ["hamburguesa", "hamburguesas", "ver hamburguesas", "quiero hamburguesa", "muestra las hamburguesas"],
+        "hamburguesas": ["hamburguesas", "hamburguesas", "ver hamburguesas", "quiero hamburguesa", "muestra las hamburguesas"],
         "asiatica": ["asiatica", "asiática", "comida asiatica", "comida asiática", "sushi", "ramen", "comida china", "ver comida asiatica"],
         "saludable": ["saludable", "comida saludable", "comida sana", "ensaladas", "frutas", "verduras", "ver comida saludable"],
         "postres": ["postres", "golosinas", "dulces", "ver postres", "quiero postre", "muestra los postres"],
@@ -128,7 +141,7 @@ def get_ai_response(user_message, user_orders=None, conversation_history=None, u
             
         # Si no es un comando, continuamos con el comportamiento normal
         # Preparar el mensaje del sistema con información adicional si hay historial
-        system_message = "Eres un asistente de FoodDelivery, una app de entrega de comida a domicilio. Sé amable y útil con los usuarios limita tus respuestas ha cosas de comida y de la aplicacion FoodDelivery."
+        system_message = "Eres un asistente de FoodDelivery, una app de entrega de comida a domicilio. Sé amable y útil con los usuarios limita tus respuestas ha cosas de comida y de la aplicacion FoodDelivery, no incluyas emojis en tus respuestas."
         
         # Si tenemos historial de pedidos, lo añadimos al contexto
         if user_orders and len(user_orders) > 0:
