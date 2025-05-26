@@ -46,17 +46,23 @@ function initializeAssistant(isMainPage) {
     // IMPORTANTE: Mover la obtención del usuario ANTES de usarlo
     // Obtener el usuario del localStorage
     const user = obtenerUsuario();
-    
-    // Ahora que ya tenemos user, podemos usarlo para personalizar el mensaje
+
+    // Determinar el mensaje de bienvenida según si es primera vez o no
     let welcomeMessage;
+    const isFirstLogin = localStorage.getItem(`firstLogin_${user?.id || 'guest'}`) !== 'true';
+
     if (isMainPage && user && user.nombre) {
-        welcomeMessage = `¡Bienvenido ${user.nombre}! ¿Qué quieres comer ahora?`;
-    } else if (isMainPage) {
-        welcomeMessage = "¡Bienvenido! ¿Qué quieres comer ahora?";
-    } else if (user && user.nombre) {
-        welcomeMessage = `Hola ${user.nombre}, estoy aquí para ayudarte. ¿Qué necesitas?`;
+        // Solo usar el saludo personalizado de comida si es la primera vez
+        if (isFirstLogin) {
+            welcomeMessage = `Hola ${user.nombre}, ¿qué quieres comer ahora?`;
+            // Marcar que ya no es primera vez para este usuario
+            localStorage.setItem(`firstLogin_${user.id}`, 'true');
+        } else {
+            welcomeMessage = `Hola ${user.nombre}, ¿en qué puedo ayudarte?`;
+        }
     } else {
-        welcomeMessage = "Hola, estoy aquí para ayudarte. ¿Qué necesitas?";
+        welcomeMessage = "Hola, ¿en qué puedo ayudarte hoy?";
+        
     }
     
     window.welcomeMessage = welcomeMessage;

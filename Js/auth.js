@@ -476,6 +476,7 @@ async function autenticarConFaceId() {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         localStorage.setItem('sessionJustStarted', 'true');
+        localStorage.setItem('voiceWarningBannerDismissed', 'false');
         
         // Redireccionar después de un momento
         setTimeout(() => {
