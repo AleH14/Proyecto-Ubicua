@@ -103,12 +103,7 @@ Un ejemplo simple para iniciar la API Flask:
 from flask import Flask
 from flask_cors import CORS
 
-app = Flask(__name__)
-CORS(app)
-
-@app.route("/")
-def hello_world():
-    return "¡Proyecto-Ubicua está funcionando!"
+#Codigo Existente
 
 if __name__ == "__main__":
     app.run(debug=True)
@@ -128,7 +123,8 @@ python app.py
 Proyecto-Ubicua/
 │
 ├── app.py                  # Archivo principal de la API Flask 
-├── requirements.txt
+├── About
+    └── requirements.txt    #Para instalar librerias
 ├── .env                    # (NO SE INCLUYE, solo ejemplo local)
 ├── Modelos3D/              # Carpeta para modelos 3D (vacía por defecto)
 │   └── Fruta/
