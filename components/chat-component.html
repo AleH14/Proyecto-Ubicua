@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="Css/styles.css">
+    <title>Document</title>
+</head>
+<body>
+    <!-- Asistente virtual (chat y voz) -->
+<div class="assistant-container">
+    <!-- Botón del asistente -->
+    <div class="assistant-btn shadow" id="assistantBtn">
+        <i class="fas fa-comment-dots"></i>
+    </div>
+    
+    <!-- Panel de chat -->
+    <div class="chat-panel shadow-lg" id="chatPanel">
+        <div class="chat-header">
+            <h6 class="m-0">Asistente FoodDelivery</h6>
+            <div>
+                <button class="btn btn-sm text-white" id="autoConversationBtn" title="Modo conversación automática">
+                    <i class="fas fa-comments"></i>
+                </button>
+                <button class="btn btn-sm text-white" id="speakToggleBtn" title="Activar/desactivar voz">
+                    <i class="fas fa-volume-mute"></i>
+                </button>
+                <button class="btn btn-sm text-white" id="voiceToggleBtn">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button class="btn btn-sm text-white" id="closeChatBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="message assistant">
+                <div class="message-content">
+                    Hola 👋 ¿En qué puedo ayudarte hoy?
+                </div>
+            </div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" class="form-control" id="chatInput" placeholder="Escribe tu mensaje...">
+            <button class="btn btn-success" id="sendMessageBtn">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Botón de activación directa de voz -->
+<div class="voice-assistant-btn" id="voiceAssistantBtn">
+    <i class="fas fa-microphone"></i>
+</div>
+    
+</body>
+</html>

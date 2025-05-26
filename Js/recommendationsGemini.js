@@ -91,7 +91,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const pasosId = `pasos-${index}`;
                 
                 // Determinar la URL de la imagen
-                let imagenUrl = receta.imagen_url || defaultImages[receta.categoria?.toLowerCase()] || defaultImages.default;
+                let imagenUrl = receta.imagen_url || 
+                                receta.image_url || 
+                                defaultImages[receta.categoria?.toLowerCase()] || 
+                                defaultImages.default;
                 
                 cardsHTML += `
                 <div class="col-md-4 mb-4">
@@ -185,3 +188,48 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     });
 });
+
+// Añadir esta función para verificar imágenes antes de mostrarlas
+function verificarImagen(url, recetaId) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = function() {
+            resolve(url); // La imagen cargó correctamente
+        };
+        img.onerror = function() {
+            // Si la imagen falla, usar la imagen de respaldo según categoría
+            const receta = document.querySelector(`#receta-${recetaId}`);
+            const categoria = receta.dataset.categoria || 'default';
+            resolve(defaultImages[categoria] || defaultImages.default);
+        };
+        img.src = url;
+    });
+}
+
+// Luego usar esta función al cargar las recetas
+async function cargarRecetas(recetas) {
+    let cardsHTML = '';
+    
+    for (let i = 0; i < recetas.length; i++) {
+        const receta = recetas[i];
+        
+        // Verificar la imagen antes de usarla
+        const imagenVerificada = await verificarImagen(
+            receta.imagen_url || defaultImages[receta.categoria?.toLowerCase()] || defaultImages.default,
+            i
+        );
+        
+        // Usar la imagen verificada en la tarjeta
+        cardsHTML += `
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm border-0 rounded-4" id="receta-${i}" data-categoria="${receta.categoria || 'default'}">
+                <!-- Resto del código con imagenVerificada -->
+                <img src="${imagenVerificada}" class="card-img-top rounded-top-4" alt="${receta.nombre}"
+                     style="height: 200px; object-fit: cover;">
+                <!-- ... -->
+            </div>
+        </div>`;
+    }
+    
+    specialSection.innerHTML = cardsHTML;
+}

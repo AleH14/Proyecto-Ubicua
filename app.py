@@ -951,6 +951,10 @@ def get_special_recommendations(current_user):
         2. Respeten las preferencias del usuario
         3. Sean relativamente sencillas de preparar en casa
         
+        Para cada receta, busca una URL de imagen real y de alta calidad que muestre exactamente cómo se ve el plato terminado.
+        Las imágenes deben ser atractivas, profesionales y de sitios como Unsplash, Pexels o de blogs culinarios confiables.
+        Evita usar URLs de imágenes protegidas por derechos de autor o imágenes genéricas.
+        
         Devuelve solo las sugerencias con el siguiente formato JSON (sin explicaciones adicionales):
         {{
             "recomendaciones": [
@@ -961,7 +965,8 @@ def get_special_recommendations(current_user):
                     "dificultad": "Fácil/Media/Difícil",
                     "ingredientes": ["Ingrediente 1", "Ingrediente 2", "..."],
                     "pasos": ["Paso 1", "Paso 2", "..."],
-                    "categoria": "desayuno, almuerzo, merienda, cena, postre o saludable"
+                    "categoria": "desayuno, almuerzo, merienda, cena, postre o saludable",
+                    "imagen_url": "URL de una imagen real del plato"
                 }},
                 ...
             ],
@@ -986,14 +991,17 @@ def get_special_recommendations(current_user):
         try:
             recommendations = json.loads(json_str)
             
-            # Añadir URLs de imágenes basadas en la categoría
+            # Verificar y ajustar URLs de imágenes
             for receta in recommendations.get('recomendaciones', []):
-                categoria = receta.get('categoria', time_of_day).lower()
-                if categoria in image_dict:
-                    receta['imagen_url'] = image_dict[categoria]
-                else:
-                    receta['imagen_url'] = image_dict.get('saludable')  # Imagen predeterminada
-            
+                # Si Gemini proporcionó una imagen_url, úsala como primera opción
+                if not 'imagen_url' in receta or not receta['imagen_url'].startswith('http'):
+                    # Como respaldo, usar imágenes por categoría
+                    categoria = receta.get('categoria', time_of_day).lower()
+                    if categoria in image_dict:
+                        receta['imagen_url'] = image_dict[categoria]
+                    else:
+                        receta['imagen_url'] = image_dict.get('saludable')  # Imagen predeterminada
+    
             return jsonify({
                 'success': True,
                 'data': recommendations

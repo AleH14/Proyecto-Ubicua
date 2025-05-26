@@ -1,22 +1,20 @@
-// Exponer el mensaje de bienvenida al scope global (añadir hacia el inicio del archivo)
+// Variables globales para exponer las funciones
+window.startListening = null;
+window.stopListening = null;
+window.addMessage = null;
+window.speakText = null;
+window.updateSpeakButtonUI = null;
+window.updateAutoConversationButtonUI = null;
+window.initChatAssistant = null;
+
+// Exponer el mensaje de bienvenida al scope global
 let welcomeMessage = "Hola ¿En qué puedo ayudarte hoy?";
 window.welcomeMessage = welcomeMessage;
 
-document.addEventListener('DOMContentLoaded', function() {
+// Función principal de inicialización
+function initializeAssistant(isMainPage) {
     console.log("Inicializando asistente virtual - " + new Date().toLocaleTimeString());
-    window.debugAssistant = function() {
-        console.log({
-            isListening,
-            isSpeakingEnabled,
-            isAutoConversationEnabled,
-            hasPendingAction: pendingAction !== null,
-            pendingAction,
-            isSpeaking: window.speechSynthesis.speaking,
-            chatPanelVisible: chatPanel.style.display !== 'none',
-            userLoggedIn: !!localStorage.getItem('token')
-        });
-    };
-    console.log("Para depurar el estado del asistente, ejecuta window.debugAssistant() en la consola");
+    console.log("Modo página principal:", isMainPage);
     
     // Elementos DOM
     const assistantBtn = document.getElementById('assistantBtn');
@@ -27,35 +25,46 @@ document.addEventListener('DOMContentLoaded', function() {
     const sendMessageBtn = document.getElementById('sendMessageBtn');
     const chatBody = document.getElementById('chatBody');
     
-    // Estado de la aplicación (añadir esta nueva variable)
+    // Estado de la aplicación
     let isListening = false;
     let isSpeakingEnabled = false;
-    let isAutoConversationEnabled = true; // Por defecto activado
+    let isAutoConversationEnabled = isMainPage; // Solo activar por defecto en página principal
     let currentUtterance = null;
     let voicesLoaded = false;
-    let helenaVoice = null; // Cambiado de maleSpanishVoice
-    let pendingAction = null; // Nueva variable para controlar acciones pendientes
-    
-    // Referencias a botones (añadir esta nueva referencia)
+    let helenaVoice = null;
+    let pendingAction = null;
+    let firstInteractionDone = false;
+    let pendingWelcomeMessage = true;
+
+    // Referencias a botones
     const speakToggleBtn = document.getElementById('speakToggleBtn');
     const autoConversationBtn = document.getElementById('autoConversationBtn');
-
-    // AÑADIR: Exponer las funciones principales al scope global
-    window.startListening = startListening;
-    window.stopListening = stopListening;
-    window.addMessage = addMessage;
-    window.speakText = speakText;
-    // Cambiar esto:
-    // window.isAutoConversationEnabled = isAutoConversationEnabled; 
-
-    // Por esto (para exponer la referencia, no solo el valor):
-    Object.defineProperty(window, 'isAutoConversationEnabled', {
-        get: function() { return isAutoConversationEnabled; },
-        set: function(value) { isAutoConversationEnabled = value; }
-    });
-
+    
+    // Limpiar el chat 
+    chatBody.innerHTML = '';
+    
+    // IMPORTANTE: Mover la obtención del usuario ANTES de usarlo
+    // Obtener el usuario del localStorage
+    const user = obtenerUsuario();
+    
+    // Ahora que ya tenemos user, podemos usarlo para personalizar el mensaje
+    let welcomeMessage;
+    if (isMainPage && user && user.nombre) {
+        welcomeMessage = `¡Bienvenido ${user.nombre}! ¿Qué quieres comer ahora?`;
+    } else if (isMainPage) {
+        welcomeMessage = "¡Bienvenido! ¿Qué quieres comer ahora?";
+    } else if (user && user.nombre) {
+        welcomeMessage = `Hola ${user.nombre}, estoy aquí para ayudarte. ¿Qué necesitas?`;
+    } else {
+        welcomeMessage = "Hola, estoy aquí para ayudarte. ¿Qué necesitas?";
+    }
+    
+    window.welcomeMessage = welcomeMessage;
+    
     // Función para actualizar el estado visual del botón de conversación automática
     function updateAutoConversationButtonUI() {
+        if (!autoConversationBtn) return;
+        
         if (isAutoConversationEnabled) {
             autoConversationBtn.classList.add('active');
             autoConversationBtn.setAttribute('title', 'Desactivar modo conversación');
@@ -92,14 +101,10 @@ document.addEventListener('DOMContentLoaded', function() {
     chatBody.innerHTML = '';
     
     // Obtener el usuario del localStorage
-    const user = obtenerUsuario();
-    let welcomeMessage = "Hola ¿En qué puedo ayudarte hoy?";
+
+
     
-    // Si hay un usuario logueado, personalizar el mensaje
-    if (user && user.nombre) {
-        welcomeMessage = `¡Bienvenido ${user.nombre}! ¿Qué quieres comer ahora?`;
-    }
-    
+
     // Verificar si acabamos de iniciar sesión
     const sessionJustStarted = localStorage.getItem('sessionJustStarted') === 'true';
     if (sessionJustStarted) {
@@ -150,8 +155,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Variables para controlar la primera interacción
-    let firstInteractionDone = false;
-    let pendingWelcomeMessage = true; // Nueva variable para controlar mensaje pendiente
+
 
     // Función para inicializar voces pero SIN mostrar bienvenida automáticamente
     function initializeVoicesAndWelcome() {
@@ -209,15 +213,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const infoMsg = document.querySelector('.message.system.highlight');
                 if (infoMsg) {
                     infoMsg.remove();
-                }
-                
-                // SIMPLIFICACIÓN: Mostrar siempre mensaje de bienvenida al primer clic
-                // Obtener el usuario del localStorage para personalizar mensaje
-                const user = obtenerUsuario();
-                let welcomeMessage = "Hola ¿En qué puedo ayudarte hoy?";
-                
-                if (user && user.nombre) {
-                    welcomeMessage = `¡Bienvenido ${user.nombre}! ¿Qué quieres comer ahora?`;
                 }
                 
                 // Activar síntesis de voz por defecto
@@ -541,7 +536,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Configura la solicitud con el token en el encabezado
+            // Configura la solicitud con el token en el encabezera
             const response = await fetch('http://localhost:5000/chat', {
                 method: 'POST',
                 headers: {
@@ -640,6 +635,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Si ya está escuchando, no hacer nada
         if (isListening) return;
+        
+        // Si el modo conversación automática está activo, desactivarlo
+        if (isAutoConversationEnabled) {
+            isAutoConversationEnabled = false;
+            localStorage.setItem('autoConversationEnabled', 'false');
+            updateAutoConversationButtonUI();
+            console.log("Modo conversación automática desactivado al usar el micrófono");
+        }
         
         isListening = true;
         voiceToggleBtn.innerHTML = '<i class="fas fa-stop"></i>';
@@ -824,6 +827,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     case 'orders':
                         window.location.href = 'mis-compras.html';
                         break;
+                    case 'home':  // Nuevo caso para ir a inicio
+                        window.location.href = 'interfaz.html';
+                        break;
                     default:
                         addMessage('No pude encontrar esa página.', 'assistant');
                         pendingAction = null; // Limpiar la acción pendiente
@@ -904,6 +910,21 @@ document.addEventListener('DOMContentLoaded', function() {
         utterance.startTime = new Date().getTime();
         return originalSpeak.call(window.speechSynthesis, utterance);
     };
+}
+
+// Exponer la función de inicialización
+window.initChatAssistant = initializeAssistant;
+
+// Iniciar cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    // Determinar si estamos en la página principal
+    const currentPage = window.location.pathname.split('/').pop();
+    const isMainPage = currentPage === 'interfaz.html' || currentPage === '' || currentPage === '/';
+    
+    // Solo iniciamos el asistente si window.isMainPage no está definido (cuando script.js se carga directamente)
+    if (window.isMainPage === undefined) {
+        initializeAssistant(isMainPage);
+    }
 });
 
 // Código para tu página index.html que detecte la categoría en la URL

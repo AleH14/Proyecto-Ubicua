@@ -45,6 +45,19 @@ def detect_action_command(message):
             "message": "Cerrando tu sesión..."
         }
     
+    # NUEVO: Comandos para ir a inicio/página principal
+    home_commands = ["ir a inicio", "volver a inicio", "pagina principal", "página principal", 
+                    "volver al inicio", "ir al inicio", "volver a la pagina principal", 
+                    "inicio", "pantalla principal", "menu principal", "menú principal"]
+    
+    if any(cmd in msg for cmd in home_commands):
+        print("🏠 Comando de ir a inicio detectado")
+        return {
+            "action": "navigate_to",
+            "target": "home",
+            "message": "Te llevo a la página principal..."
+        }
+    
     # Comandos para ir al perfil
     profile_commands = ["ver perfil", "mi perfil", "muestra mi perfil", "ir a mi perfil", 
                        "quiero ver mi perfil", "abre mi perfil", "llévame a mi perfil"]
