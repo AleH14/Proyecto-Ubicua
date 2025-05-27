@@ -46,7 +46,7 @@ def get_face_embedding(image_path):
         img = read_image(image_path)
         
         # Crear y configurar el detector de rostros
-        detector = cv2.FaceDetectorYN.create(path_detection, "", (img.shape[1], img.shape[0]))
+        detector = cv2.FaceDetectorYN.create(path_detection, "", (img.shape[1], img.shape[0]), score_threshold=0.7)
         _, faces = detector.detect(img)
         
         # Verificar si se detectaron rostros

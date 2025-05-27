@@ -25,11 +25,11 @@ function mostrarMensaje(mensaje, tipo = 'danger') {
     }, 5000);
 }
 
-// Variables para la captura facial
+// Modificación de las variables globales para trabajar con Blob
 let mediaStream = null;
-let capturedImage = null;
+let capturedImageBlob = null; // Ahora almacenamos un Blob en lugar de base64
 let faceToken = null;
-let faceCount = 0; // Nueva variable para contar rostros detectados
+let faceCount = 0;
 
 // Función para iniciar la cámara
 async function iniciarCamara() {
@@ -99,15 +99,15 @@ function detenerCamara() {
     }
 }
 
-// Función para verificar la cantidad de rostros
-async function verificarRostros(imageData) {
+// Función modificada para verificar rostros usando Blob
+async function verificarRostros(imageBlob) {
     try {
-        const response = await fetch(`${API_URL}/face/count`, {
+        const formData = new FormData();
+        formData.append('image', imageBlob, 'face.jpg');
+        
+        const response = await fetch(`${API_URL}/face/count-blob`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ image: imageData })
+            body: formData
         });
         
         const data = await response.json();
@@ -142,64 +142,71 @@ async function capturarFoto() {
     // Dibujar el frame actual del video en el canvas
     context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
     
-    // Capturar la imagen en formato base64
-    capturedImage = canvas.toDataURL('image/jpeg', 0.9);
-    
-    try {
-        // Mostrar spinner de carga durante la verificación
-        document.getElementById('faceIdStatus').textContent = 'Analizando imagen...';
-        document.getElementById('captureFaceBtn').disabled = true;
-        document.getElementById('cancelCaptureBtn').disabled = true;
+    // Convertir canvas a Blob de alta calidad
+    canvas.toBlob(async (blob) => {
+        // Guardar el Blob de la imagen
+        capturedImageBlob = blob;
         
-        // Verificar la cantidad de rostros antes de continuar
-        const result = await verificarRostros(capturedImage);
-        faceCount = result.count;
-        
-        // Habilitar botones de nuevo
-        document.getElementById('captureFaceBtn').disabled = false;
-        document.getElementById('cancelCaptureBtn').disabled = false;
-        
-        // Si hay más de un rostro, mostrar mensaje y permitir volver a intentar
-        if (faceCount > 1) {
-            mostrarMensaje('Por favor, asegúrate de estar solo en la cámara. Se ha detectado más de una cara.', 'warning');
-            document.getElementById('faceIdStatus').textContent = 'Se detectaron múltiples rostros. Por favor, intente nuevamente estando solo frente a la cámara.';
-            return;
+        try {
+            // Mostrar spinner de carga durante la verificación
+            document.getElementById('faceIdStatus').textContent = 'Analizando imagen...';
+            document.getElementById('captureFaceBtn').disabled = true;
+            document.getElementById('cancelCaptureBtn').disabled = true;
+            
+            // Verificar la cantidad de rostros antes de continuar
+            const result = await verificarRostros(blob);
+            faceCount = result.count;
+            
+            // Habilitar botones de nuevo
+            document.getElementById('captureFaceBtn').disabled = false;
+            document.getElementById('cancelCaptureBtn').disabled = false;
+            
+            // Si hay más de un rostro, mostrar mensaje y permitir volver a intentar
+            if (faceCount > 1) {
+                mostrarMensaje('Por favor, asegúrate de estar solo en la cámara. Se ha detectado más de una cara.', 'warning');
+                document.getElementById('faceIdStatus').textContent = 'Se detectaron múltiples rostros. Por favor, intente nuevamente estando solo frente a la cámara.';
+                return;
+            }
+            
+            // Si no se detectó ningún rostro
+            if (faceCount === 0) {
+                mostrarMensaje('No se detectó ningún rostro. Asegúrate de que tu cara es visible y está bien iluminada.', 'warning');
+                document.getElementById('faceIdStatus').textContent = 'No se detectó ningún rostro. Por favor, intente nuevamente.';
+                return;
+            }
+            
+            // Mostrar la imagen capturada como vista previa (crear URL temporal del Blob)
+            const previewElement = document.getElementById('faceCapturePreview');
+            const imageUrl = URL.createObjectURL(blob);
+            previewElement.style.backgroundImage = `url(${imageUrl})`;
+            previewElement.style.backgroundSize = 'cover';
+            previewElement.style.backgroundPosition = 'center';
+            previewElement.classList.remove('d-none');
+            
+            // Almacenar la URL para liberarla después
+            previewElement.dataset.blobUrl = imageUrl;
+            
+            // Ocultar video y mostrar botones de confirmación
+            videoElement.classList.add('d-none');
+            document.getElementById('captureFaceBtn').classList.add('d-none');
+            document.getElementById('confirmFaceBtn').classList.remove('d-none');
+            
+            // Actualizar estado
+            document.getElementById('faceIdStatus').textContent = '¿Es clara la imagen de tu rostro?';
+            
+        } catch (error) {
+            mostrarMensaje(`Error al analizar la imagen: ${error.message}`, 'danger');
+            document.getElementById('captureFaceBtn').disabled = false;
+            document.getElementById('cancelCaptureBtn').disabled = false;
+            document.getElementById('faceIdStatus').textContent = 'Error al analizar la imagen. Intente nuevamente.';
         }
-        
-        // Si no se detectó ningún rostro
-        if (faceCount === 0) {
-            mostrarMensaje('No se detectó ningún rostro. Asegúrate de que tu cara es visible y está bien iluminada.', 'warning');
-            document.getElementById('faceIdStatus').textContent = 'No se detectó ningún rostro. Por favor, intente nuevamente.';
-            return;
-        }
-        
-        // Mostrar la imagen capturada como vista previa
-        const previewElement = document.getElementById('faceCapturePreview');
-        previewElement.style.backgroundImage = `url(${capturedImage})`;
-        previewElement.style.backgroundSize = 'cover';
-        previewElement.style.backgroundPosition = 'center';
-        previewElement.classList.remove('d-none');
-        
-        // Ocultar video y mostrar botones de confirmación
-        videoElement.classList.add('d-none');
-        document.getElementById('captureFaceBtn').classList.add('d-none');
-        document.getElementById('confirmFaceBtn').classList.remove('d-none');
-        
-        // Actualizar estado
-        document.getElementById('faceIdStatus').textContent = '¿Es clara la imagen de tu rostro?';
-        
-    } catch (error) {
-        mostrarMensaje(`Error al analizar la imagen: ${error.message}`, 'danger');
-        document.getElementById('captureFaceBtn').disabled = false;
-        document.getElementById('cancelCaptureBtn').disabled = false;
-        document.getElementById('faceIdStatus').textContent = 'Error al analizar la imagen. Intente nuevamente.';
-    }
+    }, 'image/jpeg', 0.95); // Usar calidad 0.95 para JPEG (alta calidad)
 }
 
 // Función para procesar la imagen capturada y obtener el token facial
 async function procesarImagenFacial() {
     try {
-        if (!capturedImage) {
+        if (!capturedImageBlob) {
             throw new Error('No se ha capturado ninguna imagen');
         }
         
@@ -213,15 +220,13 @@ async function procesarImagenFacial() {
         
         console.log('Enviando imagen al servidor para procesar...');
         
-        // Enviar la imagen al servidor para procesamiento
-        const response = await fetch(`${API_URL}/face/process`, {
+        // Enviar el Blob al servidor
+        const formData = new FormData();
+        formData.append('image', capturedImageBlob, 'face.jpg');
+        
+        const response = await fetch(`${API_URL}/face/process-blob`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                image: capturedImage
-            })
+            body: formData
         });
         
         const data = await response.json();
@@ -238,6 +243,12 @@ async function procesarImagenFacial() {
         // Mostrar mensaje de éxito
         document.getElementById('faceIdCapture').classList.add('d-none');
         document.getElementById('faceIdSuccess').classList.remove('d-none');
+        
+        // Limpiar URL de objeto creado anteriormente
+        const previewElement = document.getElementById('faceCapturePreview');
+        if (previewElement.dataset.blobUrl) {
+            URL.revokeObjectURL(previewElement.dataset.blobUrl);
+        }
         
         // Detener la cámara
         detenerCamara();
@@ -323,8 +334,8 @@ async function iniciarSesion(credenciales) {
 
 // Función para cerrar sesión
 function cerrarSesion() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    // Borrar todo el contenido del localStorage
+    localStorage.clear();
     window.location.href = 'login.html';
 }
 
@@ -393,8 +404,8 @@ async function autenticarConFaceId() {
         // Activar cámara
         const stream = await navigator.mediaDevices.getUserMedia({
             video: {
-                width: { ideal: 640 },
-                height: { ideal: 480 },
+                width: { ideal: 1280 }, // Mayor resolución para mejor calidad
+                height: { ideal: 720 },
                 facingMode: "user"
             },
             audio: false
@@ -417,23 +428,38 @@ async function autenticarConFaceId() {
         // Esperar un momento para dar impresión de "escaneo"
         await new Promise(resolve => setTimeout(resolve, 1500));
         
-        // Capturar imagen
+        // Capturar imagen como Blob
         const canvas = document.getElementById('faceIdCanvas');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0);
         
-        // Convertir a base64
-        const imageData = canvas.toDataURL('image/jpeg', 0.9);
+        // Obtener Blob de la imagen en alta calidad
+        const imageBlob = await new Promise(resolve => {
+            canvas.toBlob(resolve, 'image/jpeg', 0.95);
+        });
         
         // Detener la cámara
         stream.getTracks().forEach(track => track.stop());
         
         // Verificar la cantidad de rostros
         try {
-            const faceResult = await verificarRostros(imageData);
-            const faceCount = faceResult.count;
+            const formData = new FormData();
+            formData.append('image', imageBlob, 'face.jpg');
+            
+            const faceCountResponse = await fetch(`${API_URL}/face/count-blob`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const faceResult = await faceCountResponse.json();
+            
+            if (!faceResult.success) {
+                throw new Error(faceResult.error || 'Error al verificar rostros');
+            }
+            
+            const faceCount = faceResult.faceCount;
             
             // Caso: 0 rostros
             if (faceCount === 0) {
@@ -453,13 +479,13 @@ async function autenticarConFaceId() {
             throw faceError; // Propagar el error para ser manejado en el catch principal
         }
         
-        // Enviar al servidor para autenticación (solo si hay 1 rostro)
-        const response = await fetch(`${API_URL}/auth/face-login`, {
+        // Enviar al servidor para autenticación facial
+        const loginFormData = new FormData();
+        loginFormData.append('image', imageBlob, 'face.jpg');
+        
+        const response = await fetch(`${API_URL}/auth/face-login-blob`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ image: imageData })
+            body: loginFormData
         });
         
         const data = await response.json();
@@ -492,7 +518,7 @@ async function autenticarConFaceId() {
         document.getElementById('faceIdError').classList.remove('d-none');
         document.getElementById('retryFaceIdBtn').classList.remove('d-none');
         
-        // Personalizar el mensaje de error según el tipo
+        // Personalizar mensaje de error según corresponda
         let mensajeError = '';
         let tipoAlerta = 'warning';
         
@@ -526,14 +552,12 @@ async function autenticarConFaceId() {
         } else if (error.message.includes('No se ha detectado ninguna cara')) {
             mensajeError = 'No se detectó ningún rostro en la imagen. Asegúrate de estar bien iluminado y centrado en la cámara.';
             
-            // Cambiar el mensaje en el modal
             document.querySelector('#faceIdError h5').textContent = 'No se detectó rostro';
             document.querySelector('#faceIdError p').textContent = 
                 'No se detectó ninguna cara en la imagen. Asegúrate de estar bien iluminado y centrado en la cámara.';
         } else if (error.message.includes('Se detectaron múltiples personas')) {
             mensajeError = 'Se detectaron múltiples personas. Por favor, intenta nuevamente estando solo frente a la cámara.';
             
-            // Cambiar el mensaje en el modal
             document.querySelector('#faceIdError h5').textContent = 'Múltiples rostros detectados';
             document.querySelector('#faceIdError p').textContent = 
                 'Se detectaron varias personas en la imagen. Por favor, asegúrate de estar solo frente a la cámara.';
@@ -541,7 +565,6 @@ async function autenticarConFaceId() {
             mensajeError = 'Error al verificar identidad. Usa email y contraseña para iniciar sesión.';
         }
         
-        // Mostrar mensaje en la UI
         mostrarMensaje(mensajeError, tipoAlerta);
     }
 }

@@ -17,6 +17,7 @@ from FaceRecognition.faceRecognition import obtener_token
 from FaceRecognition.faceAnalizer import verify_face, get_face_embedding
 import cv2  # Importar OpenCV
 from ModeloIAGemini.TestIAGemini import generar_respuesta_texto
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 CORS(app, resources={
@@ -1018,6 +1019,250 @@ def get_special_recommendations(current_user):
         return jsonify({
             'success': False,
             'error': f'Error al generar recomendaciones: {str(e)}'
+        }), 500
+
+# Agregar estos imports adicionales
+from werkzeug.utils import secure_filename
+import tempfile
+
+# Añade estos nuevos endpoints para trabajar con Blob en lugar de base64
+
+@app.route('/api/face/count-blob', methods=['POST'])
+def count_faces_in_image_blob():
+    try:
+        # Verificar si se envió un archivo
+        if 'image' not in request.files:
+            return jsonify({
+                'success': False,
+                'error': 'No se proporcionó ninguna imagen'
+            }), 400
+            
+        # Obtener el archivo de imagen
+        image_file = request.files['image']
+        
+        # Guardar la imagen temporalmente
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_file:
+            temp_file_path = temp_file.name
+            image_file.save(temp_file_path)
+        
+        try:
+            # Usar OpenCV para detectar rostros
+            img = cv2.imread(temp_file_path)
+            if img is None:
+                return jsonify({
+                    'success': False,
+                    'error': 'No se pudo cargar la imagen'
+                }), 400
+                
+            # Crear y configurar el detector de rostros
+            detector = cv2.FaceDetectorYN.create(
+                "FaceRecognition/dnns/face_detection_yunet_2023mar.onnx", 
+                "", 
+                (img.shape[1], img.shape[0])
+            )
+            
+            # Realizar la detección
+            _, faces = detector.detect(img)
+            
+            if faces is None:
+                face_count = 0
+                message = "No se detectaron rostros en la imagen"
+            else:
+                face_count = len(faces)
+                
+                if face_count == 0:
+                    message = "No se detectaron rostros en la imagen"
+                elif face_count == 1:
+                    message = "Se detectó un rostro correctamente"
+                else:
+                    message = f"Se detectaron {face_count} rostros en la imagen"
+                    
+            return jsonify({
+                'success': True,
+                'faceCount': face_count,
+                'message': message
+            })
+            
+        finally:
+            # Limpiar el archivo temporal
+            if os.path.exists(temp_file_path):
+                os.unlink(temp_file_path)
+                
+    except Exception as e:
+        print(f"Error al contar rostros en la imagen: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'Error al procesar la imagen: {str(e)}'
+        }), 500
+
+@app.route('/api/face/process-blob', methods=['POST'])
+def process_face_image_blob():
+    try:
+        # Verificar si se envió un archivo
+        if 'image' not in request.files:
+            return jsonify({
+                'success': False,
+                'error': 'No se proporcionó ninguna imagen'
+            }), 400
+            
+        # Obtener el archivo de imagen
+        image_file = request.files['image']
+        
+        # Guardar la imagen temporalmente
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_file:
+            temp_file_path = temp_file.name
+            image_file.save(temp_file_path)
+        
+        try:
+            # Procesar la imagen con faceRecognition
+            face_token = obtener_token(temp_file_path)
+            
+            if face_token is None:
+                return jsonify({
+                    'success': False,
+                    'error': 'No se pudo detectar un rostro claro en la imagen'
+                }), 400
+                
+            # Devolver el token facial
+            return jsonify({
+                'success': True,
+                'faceToken': face_token
+            })
+            
+        finally:
+            # Limpiar el archivo temporal
+            if os.path.exists(temp_file_path):
+                os.unlink(temp_file_path)
+                
+    except Exception as e:
+        print(f"Error al procesar imagen facial: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'Error al procesar la imagen: {str(e)}'
+        }), 500
+
+@app.route('/api/auth/face-login-blob', methods=['POST'])
+def face_login_blob():
+    try:
+        # Verificar si se envió un archivo
+        if 'image' not in request.files:
+            return jsonify({
+                'success': False,
+                'error': 'No se proporcionó ninguna imagen'
+            }), 400
+            
+        # Obtener el archivo de imagen
+        image_file = request.files['image']
+        
+        # Guardar la imagen temporalmente
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_file:
+            temp_file_path = temp_file.name
+            image_file.save(temp_file_path)
+            
+        try:
+            # Verificar primero la cantidad de rostros
+            img = cv2.imread(temp_file_path)
+            detector = cv2.FaceDetectorYN.create(
+                "FaceRecognition/dnns/face_detection_yunet_2023mar.onnx", 
+                "", 
+                (img.shape[1], img.shape[0]),score_threshold=0.7
+            )
+            
+            # Realizar la detección
+            _, faces = detector.detect(img)
+            
+            # Validar cantidad de rostros
+            if faces is None or len(faces) == 0:
+                return jsonify({
+                    'success': False,
+                    'error': 'No se detectaron rostros en la imagen'
+                }), 400
+                
+            if len(faces) > 1:
+                return jsonify({
+                    'success': False,
+                    'error': 'Se detectaron múltiples personas. Por favor, intenta con una sola persona en la cámara'
+                }), 400
+            
+            # Buscar todos los usuarios que tengan token facial
+            users_with_face = list(users_collection.find({'faceToken': {'$exists': True}}))
+            
+            if not users_with_face:
+                print("No hay usuarios registrados con Face ID")
+                return jsonify({
+                    'success': False,
+                    'error': 'No hay usuarios registrados con Face ID'
+                }), 404
+                
+            print(f"Encontrados {len(users_with_face)} usuarios con token facial")
+                
+            # Procesar la imagen para verificar si hay rostros
+            result = get_face_embedding(temp_file_path)
+            
+            if not result["success"]:
+                return jsonify({
+                    'success': False,
+                    'error': result.get("error", "Error al procesar la imagen facial")
+                }), 400
+                
+            # Para cada usuario, verificar si coincide con la imagen
+            best_match = None
+            best_similarity = 0
+            threshold = 0.5  # Umbral para considerar coincidencia
+            
+            for user in users_with_face:
+                # Verificar identidad usando faceAnalizer
+                result = verify_face(temp_file_path, user['faceToken'], threshold)
+                
+                if "error" in result:
+                    print(f"Error al verificar usuario {user['email']}: {result['error']}")
+                    continue
+                    
+                similarity = result.get('similarity', 0)
+                print(f"Usuario {user['email']} - Similitud: {similarity:.4f}")
+                
+                if result.get('match', False) and similarity > best_similarity:
+                    best_match = user
+                    best_similarity = similarity
+            
+            # Si encontramos una coincidencia
+            if best_match:
+                # Generar token JWT
+                token = generate_token(str(best_match['_id']))
+                
+                # Datos del usuario para respuesta (sin contraseña ni token facial)
+                user_data = {
+                    'id': str(best_match['_id']),
+                    'nombre': best_match['nombre'],
+                    'apellidos': best_match['apellidos'],
+                    'email': best_match['email'],
+                    'similarity': best_similarity
+                }
+                
+                print(f"¡Coincidencia! Usuario: {best_match['email']} - Similitud: {best_similarity:.4f}")
+                
+                return jsonify({
+                    'success': True,
+                    'token': token,
+                    'user': user_data
+                })
+            else:
+                print("No se encontraron coincidencias")
+                return jsonify({
+                    'success': False,
+                    'error': 'No se pudo verificar la identidad'
+                }), 401
+                
+        finally:
+            # Limpiar archivo temporal
+            if os.path.exists(temp_file_path):
+                os.unlink(temp_file_path)
+                
+    except Exception as e:
+        print(f"Error en autenticación facial: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'Error en autenticación facial: {str(e)}'
         }), 500
 
 if __name__ == '__main__':

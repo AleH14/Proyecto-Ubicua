@@ -18,7 +18,7 @@
         "imagen": "https://lh5.googleusercontent.com/proxy/hW3yl7dUdfHzW6xO8lDrbpcDwT13HnuHajvNzq5MHREZo2HjavN_iocxd4-h2Hsq3e3nkozEZF_dNNHvZuXaPVQKAnwLKPGTJL3p_3ukKOIhU2p9tJofWdDmfmcrfF59",
         "precio": "€9.95",
         "rating": "4.7",
-        "ruta": "modelos3D/Hamburgesas/Cheeseburger.glb" 
+        "ruta": "modelos3D/Hamburguesas/KFC,burger.glb" 
       },
       {
         "id": "hamburguesa-3",
@@ -27,7 +27,7 @@
         "imagen": "https://www.unileverfoodsolutions.es/dam/global-ufs/mcos/SPAIN/calcmenu/recipes/ES-recipes/general/hamburguesa-de-ternera-al-pesto/main-header.jpg",
         "precio": "€7.95",
         "rating": "4.3",
-        "ruta": "modelos3D/Hamburgesas/Cheeseburger.glb" 
+        "ruta": "modelos3D/Hamburguesas/Sandwich.glb" 
       }
     ]
   },
