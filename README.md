@@ -77,9 +77,11 @@ Para ejecutar el proyecto correctamente, debes crear un archivo `.env` en la ra√
 ```env
 OPENAI_API_KEY=tu_apikey_openai
 GOOGLE_API_KEY=tu_apikey_google_gemini
+GOOGLE_API_KEY=tu_secretkey
 ```
 
 **Importante:**
+- Ten encuenta que el API de OPEN IA es de paga
 - El archivo `.env` **no** debe compartirse ni subirse a control de versiones.
 - Las claves deben ser v√°lidas y tener los permisos necesarios en sus respectivas plataformas.
 
