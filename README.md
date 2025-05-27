@@ -30,7 +30,8 @@ Proyecto-Ubicua es una plataforma que integra modelos de IA, reconocimiento faci
    ```
 
 3. **Instala las dependencias:**
-   -En la carpeta about se encuentra
+   
+      -En la carpeta about se encuentra requirements.txt mas la documentacion del programa.
 
    ```bash
    pip install --upgrade pip
@@ -41,26 +42,8 @@ Proyecto-Ubicua es una plataforma que integra modelos de IA, reconocimiento faci
 ## Requisitos Adicionales
 
 Algunas librerías de este proyecto requieren pasos adicionales o dependencias del sistema para funcionar correctamente:
-
-- **dlib y face-recognition**
-  - En Linux, se recomienda tener instalados los compiladores de C++ y CMake:
-    ```bash
-    sudo apt-get install build-essential cmake
-    sudo apt-get install libopenblas-dev liblapack-dev
-    sudo apt-get install libx11-dev libgtk-3-dev
-    ```
-  - En Windows, puedes necesitar instalar CMake y Visual Studio Build Tools. Consulta la documentación oficial de [dlib](https://pypi.org/project/dlib/) y [face-recognition](https://github.com/ageitgey/face_recognition).
-
-- **PyAudio**
-  - Puede requerir las cabeceras de portaudio:
-    - En Linux:
-      ```bash
-      sudo apt-get install portaudio19-dev
-      ```
-    - En Windows, si falla la instalación vía pip, descarga la rueda (wheel) correspondiente desde [PyAudio Wheels](https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio) y luego instala con:
-      ```bash
-      pip install nombre_del_archivo.whl
-      ```
+- **Para el reconocimiento facial**
+  - Se utiliza face_detection_yunet_2023mar y face_recognition_sface_2021dec que no estan disponible en el repositorio pero puedes descargarlos de internet y colocarlo segun la estructura de carpetas que explico aqui abajo.
 
 - **opencv-python**
   - Puede requerir paquetes del sistema para el soporte de video o GUI, especialmente en servidores o entornos headless.
@@ -125,6 +108,8 @@ python app.py
 ```
 
 > Asegúrate de configurar tus variables de entorno en un archivo `.env` y exportar las credenciales de Google Cloud como se indicó antes.
+>Luego busca en los archivos Login.html dale doble clic y disfruta!!!
+
 
 ## Estructura del Proyecto
 
