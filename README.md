@@ -30,9 +30,11 @@ Proyecto-Ubicua es una plataforma que integra modelos de IA, reconocimiento faci
    ```
 
 3. **Instala las dependencias:**
+   -En la carpeta about se encuentra
 
    ```bash
    pip install --upgrade pip
+   cd About
    pip install -r requirements.txt
    ```
 
