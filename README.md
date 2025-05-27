@@ -65,6 +65,11 @@ Algunas librerías de este proyecto requieren pasos adicionales o dependencias d
 
 - **Google Speech Recognition**
   - Debes habilitar la API de Speech-to-Text en Google Cloud Platform y descargar el archivo de credenciales JSON.
+- **API OPEN AI**
+  - Debes habilitar la API de OPEN IA.
+- **Instalar el Gestor de Base de Datos de MongoDB**
+  - Instalar la version version v8.0.9.
+
 
 - **Toma en cuenta:**
   1. Algunas librerías pueden requerir privilegios de administrador o la instalación de dependencias del sistema operativo.
